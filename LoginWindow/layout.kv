@@ -1,0 +1,52 @@
+<LoginWindow>:
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: "20dp"
+        MDLabel:
+            size_hint: 0.2, None
+            height: "100dp"
+            text: "Username:"
+            pos_hint: {'right': 0, 'center_y': 0.5}
+            halign: "right"
+        MDTextField:
+            multiline: False
+            size_hint: 0.7, None
+            height: "100dp"
+            pos_hint: {'center_y': 0.5}
+            id: username
+            write_tab: False
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: "20dp"
+        MDLabel:
+            size_hint: 0.2, None
+            height: "100dp"
+            text: "Password:"
+            pos_hint: {'x': 1, 'center_y': 0.5}
+            halign: "right"
+        MDTextField:
+            multiline: False
+            size_hint: 0.7, None
+            pos_hint: {'center_y': 0.5}
+            height: "100dp"
+            password: True
+            id: password
+            write_tab: False
+    BoxLayout:
+        orientation: "horizontal"
+        padding: "20dp"
+        margin: "20dp"
+        spacing: "20dp"
+        FocusButton:
+            id: cancel_button
+            size_hint: 0.5, 1
+            text: "CANCEL"
+            line_color: 'green' if self.focus else 'orange'
+            on_release: root.cancel_pressed()
+        FocusButton:
+            id: ok_button
+            size_hint: 0.5, 1
+            text: "OK"
+            line_color: 'green' if self.focus else 'orange'
+            on_release: root.ok_pressed()
