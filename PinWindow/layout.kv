@@ -1,0 +1,106 @@
+<PinWindow>:
+    orientation: 'vertical'
+    MDLabel:
+        text: 'Enter PIN'
+        font_size: '40dp'
+        halign: 'center'
+    MDBoxLayout:
+        orientation: 'horizontal'
+        id: pin
+        canvas:
+            Color:
+                rgba: 1, 1, 1, 1
+            Ellipse:
+                pos: self.pos[0] + 1*self.size[0]/8 - root.PIN_radius_out/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_out/2
+                size: root.PIN_radius_out, root.PIN_radius_out
+            Ellipse:
+                pos: self.pos[0] + 3*self.size[0]/8 - root.PIN_radius_out/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_out/2
+                size: root.PIN_radius_out, root.PIN_radius_out
+            Ellipse:
+                pos: self.pos[0] + 5*self.size[0]/8 - root.PIN_radius_out/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_out/2
+                size: root.PIN_radius_out, root.PIN_radius_out
+            Ellipse:
+                pos: self.pos[0] + 7*self.size[0]/8 - root.PIN_radius_out/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_out/2
+                size: root.PIN_radius_out, root.PIN_radius_out
+            Color:
+                rgba: 0, 0, 0, 1
+            Ellipse:
+                pos: self.pos[0] + 1*self.size[0]/8 - root.PIN_radius_in/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_in/2
+                size: root.PIN_radius_in, root.PIN_radius_in
+            Ellipse:
+                pos: self.pos[0] + 3*self.size[0]/8 - root.PIN_radius_in/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_in/2
+                size: root.PIN_radius_in, root.PIN_radius_in
+            Ellipse:
+                pos: self.pos[0] + 5*self.size[0]/8 - root.PIN_radius_in/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_in/2
+                size: root.PIN_radius_in, root.PIN_radius_in
+            Ellipse:
+                pos: self.pos[0] + 7*self.size[0]/8 - root.PIN_radius_in/2, self.pos[1] + self.size[1]/2 - root.PIN_radius_in/2
+                size: root.PIN_radius_in, root.PIN_radius_in
+    MDBoxLayout:
+        orientation: 'horizontal'
+        MDRectangleFlatButton:
+            text: '1'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('1')
+        MDRectangleFlatButton:
+            text: '2'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('2')
+        MDRectangleFlatButton:
+            text: '3'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('3')
+    MDBoxLayout:
+        orientation: 'horizontal'
+        MDRectangleFlatButton:
+            text: '4'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('4')
+        MDRectangleFlatButton:
+            text: '5'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('5')
+        MDRectangleFlatButton:
+            text: '6'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('6')
+    MDBoxLayout:
+        orientation: 'horizontal'
+        MDRectangleFlatButton:
+            text: '7'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('7')
+        MDRectangleFlatButton:
+            text: '8'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('8')
+        MDRectangleFlatButton:
+            text: '9'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('9')
+    MDBoxLayout:
+        orientation: 'horizontal'
+        MDRectangleFlatButton:
+            text: 'C'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.c_pressed()
+        MDRectangleFlatButton:
+            text: '0'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.number_pressed('0')
+        MDRectangleFlatButton:
+            text: 'OK'
+            size_hint: 1, 1
+            font_size: '40dp'
+            on_press: root.ok_pressed()
