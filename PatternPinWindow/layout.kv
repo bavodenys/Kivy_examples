@@ -1,0 +1,22 @@
+<PatternPinWindow>:
+    orientation: 'vertical'
+    MDLabel:
+        text: 'Draw pattern to unlock'
+        font_size: '40dp'
+        halign: 'center'
+        size_hint: 1, None
+        height: dp(50)
+    MDBoxLayout:
+        id: pattern_box
+        orientation: 'vertical'
+        size_hint: 1, 1
+
+
+<PatternDot>:
+    canvas:
+        Color:
+            rgba: (1, 1, 1, 1)
+        Ellipse:
+            pos: self.center_x-root.dot_radius/2, self.center_y-root.dot_radius/2
+            size: root.dot_radius, root.dot_radius
+    pos_hint:{'center-x': 0.5, 'center-y': 0.5}
