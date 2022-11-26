@@ -1,0 +1,23 @@
+WindowManager:
+    MainWindow:
+    RecordWindow:
+
+<MainWindow>:
+    name: 'main'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDLabel:
+            text: 'Sport logger'
+            halign: 'center'
+        MDFloatingActionButtonSpeedDial:
+            data: app.data
+            root_button_anim: True
+            callback: app.callback
+
+<RecordWindow>:
+    name: 'record'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDLabel:
+            text: app.activity_type
+            halign: 'center'
