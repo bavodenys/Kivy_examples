@@ -78,9 +78,9 @@ WindowManager:
                 pos_hint: {'center_y': 0.5}
                 on_press: root.rest_plus()
         MDFloatingActionButton:
+            id: start
             icon: 'play'
             icon_size: dp(52)
-            size_hint: 0.2, 1
             pos_hint: {'right': 1}
             on_press: root.parent.start_workout()
 
@@ -102,6 +102,7 @@ WindowManager:
             text: root.workout_state
             halign: 'center'
         MDFloatingActionButton:
+            id: stop
             icon: 'stop'
             icon_size: dp(52)
             pos_hint: {'right': 1}
