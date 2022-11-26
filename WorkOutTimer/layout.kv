@@ -1,0 +1,108 @@
+WindowManager:
+    MainWindow:
+    WorkOutWindow:
+
+<MainWindow>:
+    name: 'main'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDLabel:
+            text: 'Workout Timer'
+            font_size: dp(64)
+            halign: 'center'
+        MDLabel:
+            text: 'Sets'
+            pos_hint: {'center_y': 0}
+            font_size: dp(52)
+            halign: 'center'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDIconButton:
+                icon: 'minus'
+                md_bg_color: app.theme_cls.primary_light
+                icon_size: dp(52)
+                pos_hint: {'center_y': 0.5}
+                on_press: root.sets_minus()
+            MDLabel:
+                text: root.number_of_sets
+                font_size: dp(52)
+                halign: 'center'
+            MDIconButton:
+                icon: 'plus'
+                md_bg_color: app.theme_cls.primary_light
+                icon_size: dp(52)
+                pos_hint: {'center_y': 0.5}
+                on_press: root.sets_plus()
+        MDLabel:
+            text: 'Work'
+            font_size: dp(52)
+            halign: 'center'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDIconButton:
+                icon: 'minus'
+                icon_size: dp(52)
+                md_bg_color: app.theme_cls.primary_light
+                pos_hint: {'center_y': 0.5}
+                on_press: root.work_minus()
+            MDLabel:
+                text: root.workout_duration
+                font_size: dp(52)
+                halign: 'center'
+            MDIconButton:
+                icon: 'plus'
+                icon_size: dp(52)
+                md_bg_color: app.theme_cls.primary_light
+                pos_hint: {'center_y': 0.5}
+                on_press: root.work_plus()
+        MDLabel:
+            text: 'Rest'
+            font_size: dp(52)
+            halign: 'center'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDIconButton:
+                icon: 'minus'
+                icon_size: dp(52)
+                md_bg_color: app.theme_cls.primary_light
+                pos_hint: {'center_y': 0.5}
+                on_press: root.rest_minus()
+            MDLabel:
+                text: root.rest_duration
+                font_size: dp(52)
+                halign: 'center'
+            MDIconButton:
+                icon: 'plus'
+                icon_size: dp(52)
+                md_bg_color: app.theme_cls.primary_light
+                pos_hint: {'center_y': 0.5}
+                on_press: root.rest_plus()
+        MDFloatingActionButton:
+            icon: 'play'
+            icon_size: dp(52)
+            size_hint: 0.2, 1
+            pos_hint: {'right': 1}
+            on_press: root.parent.start_workout()
+
+
+<WorkOutWindow>:
+    name: 'workout'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDLabel:
+            font_size: dp(52)
+            text: root.current_set
+            halign: 'center'
+        MDLabel:
+            font_size: dp(52)
+            text: root.timer_value
+            halign: 'center'
+        MDLabel:
+            font_size: dp(52)
+            text: root.workout_state
+            halign: 'center'
+        MDFloatingActionButton:
+            icon: 'stop'
+            icon_size: dp(52)
+            pos_hint: {'right': 1}
+            on_press: root.parent.stop_workout()
