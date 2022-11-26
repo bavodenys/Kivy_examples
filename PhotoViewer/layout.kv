@@ -1,0 +1,16 @@
+<PhotoWindow>:
+    orientation: 'vertical'
+    Image:
+        size: self.texture_size
+        source: root.photo_path
+    MDBoxLayout:
+        orientation: 'horizontal'
+        MDIconButton:
+            size_hint: 1, None
+            icon: "arrow-left"
+            on_release: root.previous_photo()
+        MDIconButton:
+            size_hint: 1, None
+            icon: "arrow-right"
+            on_release: root.next_photo()
+
