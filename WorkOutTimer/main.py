@@ -129,7 +129,6 @@ class WorkOutWindow(Screen):
         super().__init__(**kwargs)
 
 
-
 class MainApp(MDApp):
 
     def build(self):
@@ -139,6 +138,12 @@ class MainApp(MDApp):
         kv = Builder.load_file("layout.kv")
         return kv
 
+    def on_start(self):
+        Clock.schedule_once(self.init_floating_buttons, 1)
+
+    def init_floating_buttons(self, dt):
+        self.root_window.children[0].screens[0].ids['start'].size = [WINDOW_WIDTH/5, WINDOW_WIDTH/5]
+        self.root_window.children[0].screens[1].ids['stop'].size = [WINDOW_WIDTH/5, WINDOW_WIDTH/5]
 
 
 if __name__ == "__main__":
