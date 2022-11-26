@@ -8,7 +8,7 @@ from kivy.properties import StringProperty
 from kivy.clock import Clock
 from gen_functions import *
 
-# Calibrations
+# Calibrations window
 WINDOW_WIDTH = dp(500)
 WINDOW_HEIGHT = dp(800)
 
