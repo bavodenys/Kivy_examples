@@ -4,27 +4,43 @@ from kivy.metrics import dp
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.core.window import Window
 from kivy.utils import platform
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.properties import StringProperty
+from kivymd.uix.label import MDLabel
+from kivy.clock import Clock
+from kivymd.uix.boxlayout import MDBoxLayout
 from plyer import gps
 
 # Set to True to just test the GUI (not the GPS functionality)
 DEBUG = True
 
+# Version
+MAJOR_VERSION = 0
+MINOR_VERSION = 1
+
 # Calibrations window
-WINDOW_WIDTH = dp(500)
-WINDOW_HEIGHT = dp(800)
+if DEBUG:
+    WINDOW_WIDTH = dp(500)
+    WINDOW_HEIGHT = dp(800)
 
 class WindowManager(ScreenManager):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.transition = NoTransition()
-        Window.size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        if DEBUG:
+            Window.size = (WINDOW_WIDTH, WINDOW_HEIGHT)
 
 class MainWindow(Screen):
     pass
 
 class RecordWindow(Screen):
+    pass
+
+class Run_activity(ButtonBehavior, MDBoxLayout):
+    pass
+
+class Ride_activity(ButtonBehavior, MDBoxLayout):
     pass
 
 class MainApp(MDApp):
@@ -65,7 +81,7 @@ class MainApp(MDApp):
     def build(self):
         self.title = "Sport logger"
         self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "Orange"
+        self.theme_cls.primary_palette = "Green"
 
         if not(DEBUG):
             try:
@@ -83,6 +99,19 @@ class MainApp(MDApp):
         kv = Builder.load_file("layout.kv")
         return kv
 
+    def on_start(self):
+        Clock.schedule_once(self.init_gui, 1)
+
+    def init_gui(self, dt):
+        self.root.screens[0].ids['record_activity_menu'].icon = 'record'
+        for i in range(20):
+            if i%2 == 1:
+                activity = Ride_activity()
+            else:
+                activity = Run_activity()
+            self.root.screens[0].ids['activity_overview'].add_widget(activity)
+            #self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, 0.1)))
+
     def callback(self, instance):
         if instance.icon == 'bike':
             self.root.current = self.root.screens[1].name
@@ -91,6 +120,13 @@ class MainApp(MDApp):
         if instance.icon == 'run':
             self.root.current = self.root.screens[1].name
             self.activity_type = "Run"
+
+    def menu_callback(self):
+        print('Menu callback')
+
+    def activity_pressed(self):
+        print('Activity pressed')
+
 
 if __name__ == "__main__":
     try:

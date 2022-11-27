@@ -6,13 +6,19 @@ WindowManager:
     name: 'main'
     MDBoxLayout:
         orientation: 'vertical'
-        MDLabel:
-            text: 'Sport logger'
-            halign: 'center'
-        MDFloatingActionButtonSpeedDial:
-            data: app.data
-            root_button_anim: True
-            callback: app.callback
+        MDTopAppBar:
+            title: 'Sport logger'
+            right_action_items: [["dots-vertical", lambda x: app.menu_callback()]]
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            MDList:
+                id: activity_overview
+    MDFloatingActionButtonSpeedDial:
+        id: record_activity_menu
+        data: app.data
+        root_button_anim: True
+        callback: app.callback
 
 <RecordWindow>:
     name: 'record'
@@ -21,3 +27,60 @@ WindowManager:
         MDLabel:
             text: app.activity_type
             halign: 'center'
+
+<Run_activity>:
+    md_bg_color: app.theme_cls.primary_light
+    orientation: 'horizontal'
+    on_press: app.activity_pressed()
+    MDIcon:
+        icon: 'run'
+        size_hint: 0.3, 1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        font_size: dp(80)
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Date: '
+            MDLabel:
+                text: 'Start time: '
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Distance: '
+            MDLabel:
+                text: 'Duration: '
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Pace: '
+
+<Ride_activity>:
+    md_bg_color: app.theme_cls.primary_light
+    orientation: 'horizontal'
+    on_press: app.activity_pressed()
+    MDIcon:
+        icon: 'bike'
+        size_hint: 0.3, 1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        font_size: dp(80)
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Date: '
+            MDLabel:
+                text: 'Start time: '
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Distance: '
+            MDLabel:
+                text: 'Duration: '
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Avg speed: '
+
