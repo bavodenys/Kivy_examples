@@ -16,7 +16,7 @@ WindowManager:
                 id: activity_overview
     MDFloatingActionButtonSpeedDial:
         id: record_activity_menu
-        data: app.data
+        data: app.activities_record
         root_button_anim: True
         callback: app.callback
 
@@ -42,19 +42,19 @@ WindowManager:
         MDBoxLayout:
             orientation: 'horizontal'
             MDLabel:
-                text: 'Date: '
+                text: root.date
             MDLabel:
-                text: 'Start time: '
+                text: root.start_time
         MDBoxLayout:
             orientation: 'horizontal'
             MDLabel:
-                text: 'Distance: '
+                text: root.distance
             MDLabel:
-                text: 'Duration: '
+                text: root.duration
         MDBoxLayout:
             orientation: 'horizontal'
             MDLabel:
-                text: 'Pace: '
+                text: root.pace
 
 <Ride_activity>:
     md_bg_color: app.theme_cls.primary_light
@@ -70,17 +70,17 @@ WindowManager:
         MDBoxLayout:
             orientation: 'horizontal'
             MDLabel:
-                text: 'Date: '
+                text: root.date
             MDLabel:
-                text: 'Start time: '
+                text: root.start_time
         MDBoxLayout:
             orientation: 'horizontal'
             MDLabel:
-                text: 'Distance: '
+                text: root.distance
             MDLabel:
-                text: 'Duration: '
+                text: root.duration
         MDBoxLayout:
             orientation: 'horizontal'
             MDLabel:
-                text: 'Avg speed: '
+                text: root.avg_spd
 

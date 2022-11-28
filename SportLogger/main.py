@@ -11,6 +11,8 @@ from kivy.clock import Clock
 from kivymd.uix.boxlayout import MDBoxLayout
 from plyer import gps
 
+from temp import *
+
 # Set to True to just test the GUI (not the GPS functionality)
 DEBUG = True
 
@@ -38,18 +40,32 @@ class RecordWindow(Screen):
     pass
 
 class Run_activity(ButtonBehavior, MDBoxLayout):
-    pass
+    date = StringProperty('')
+    start_time = StringProperty('')
+    distance = StringProperty('')
+    duration = StringProperty('')
+    pace = StringProperty('')
+
 
 class Ride_activity(ButtonBehavior, MDBoxLayout):
-    pass
+    date = StringProperty('')
+    start_time = StringProperty('')
+    distance = StringProperty('')
+    duration = StringProperty('')
+    avg_spd = StringProperty('')
+
 
 class MainApp(MDApp):
     activity_type = StringProperty('Run')
 
-    data = {
+    activities_record = {
         'Run': 'run',
         'Ride': 'bike'
     }
+
+    def __init__(self, activities, **kwargs):
+        super().__init__(**kwargs)
+        self.activities = activities
 
     def request_android_permissions(self):
         """
@@ -104,12 +120,20 @@ class MainApp(MDApp):
 
     def init_gui(self, dt):
         self.root.screens[0].ids['record_activity_menu'].icon = 'record'
-        for i in range(20):
-            if i%2 == 1:
-                activity = Ride_activity()
-            else:
-                activity = Run_activity()
-            self.root.screens[0].ids['activity_overview'].add_widget(activity)
+        for activity in self.activities:
+            if activity['type'] == "ride":
+                activity_entry = Ride_activity(date=f"Date: {activity['date']}", \
+                                         start_time=f"Start time: {activity['start_time']}", \
+                                         distance=f"Distance: {activity['distance']}", \
+                                         duration=f"Duration: {activity['duration']}", \
+                                         avg_spd=f"Avg speed: {activity['avg_spd']}")
+            if activity['type'] == "run":
+                activity_entry = Run_activity(date=f"Date: {activity['date']}", \
+                                        start_time=f"Start time: {activity['start_time']}", \
+                                        distance=f"Distance: {activity['distance']}", \
+                                        duration=f"Duration: {activity['duration']}", \
+                                        pace=f"Pace: {activity['pace']}")
+            self.root.screens[0].ids['activity_overview'].add_widget(activity_entry)
             #self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, 0.1)))
 
     def callback(self, instance):
@@ -130,7 +154,7 @@ class MainApp(MDApp):
 
 if __name__ == "__main__":
     try:
-        app = MainApp()
+        app = MainApp(activities=activities)
         app.run()
     except:
         pass
