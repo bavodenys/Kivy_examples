@@ -5,8 +5,8 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.core.window import Window
 from kivy.utils import platform
 from kivy.uix.behaviors import ButtonBehavior
-from kivy.properties import StringProperty
 from kivymd.uix.label import MDLabel
+from kivy.properties import StringProperty
 from kivy.clock import Clock
 from kivymd.uix.boxlayout import MDBoxLayout
 from plyer import gps
@@ -134,7 +134,7 @@ class MainApp(MDApp):
                                         duration=f"Duration: {activity['duration']}", \
                                         pace=f"Pace: {activity['pace']}")
             self.root.screens[0].ids['activity_overview'].add_widget(activity_entry)
-            #self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, 0.1)))
+            self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, None), height=dp(5)))
 
     def callback(self, instance):
         if instance.icon == 'bike':
