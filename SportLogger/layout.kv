@@ -1,3 +1,6 @@
+#:import sys sys
+#:import MapSource kivy_garden.mapview.MapSource
+
 WindowManager:
     MainWindow:
     RecordWindow:
@@ -8,7 +11,7 @@ WindowManager:
         orientation: 'vertical'
         MDTopAppBar:
             title: 'Sport logger'
-            right_action_items: [["dots-vertical", lambda x: app.menu_callback()]]
+            right_action_items: [["information-outline", lambda x: app.call_about()]]
         ScrollView:
             do_scroll_x: False
             do_scroll_y: True
@@ -24,9 +27,14 @@ WindowManager:
     name: 'record'
     MDBoxLayout:
         orientation: 'vertical'
+        MapView:
+            id: log_map
+            lat: 50.00
+            lon: 3.00
+            zoom: 6
         MDLabel:
-            text: app.activity_type
-            halign: 'center'
+            text: "Run"
+
 
 <Run_activity>:
     md_bg_color: app.theme_cls.primary_light

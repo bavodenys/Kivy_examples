@@ -6,9 +6,11 @@ from kivy.core.window import Window
 from kivy.utils import platform
 from kivy.uix.behaviors import ButtonBehavior
 from kivymd.uix.label import MDLabel
-from kivy.properties import StringProperty
-from kivy.clock import Clock
+from kivy.properties import StringProperty, NumericProperty
+from kivy.clock import Clock, mainthread
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.dialog import MDDialog
+from kivy_garden.mapview import MapMarker
 from plyer import gps
 
 from temp import *
@@ -19,6 +21,10 @@ DEBUG = True
 # Version
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
+
+#Activity calibrations
+RUN_LOG_PERIOD = 1
+BIKE_LOG_PERIOD = 1
 
 # Calibrations window
 if DEBUG:
@@ -56,7 +62,7 @@ class Ride_activity(ButtonBehavior, MDBoxLayout):
 
 
 class MainApp(MDApp):
-    activity_type = StringProperty('Run')
+    activity_type = StringProperty('run')
 
     activities_record = {
         'Run': 'run',
@@ -66,6 +72,7 @@ class MainApp(MDApp):
     def __init__(self, activities, **kwargs):
         super().__init__(**kwargs)
         self.activities = activities
+        self.gps_location = {}
 
     def request_android_permissions(self):
         """
@@ -137,16 +144,55 @@ class MainApp(MDApp):
             self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, None), height=dp(5)))
 
     def callback(self, instance):
+        self.root.current = self.root.screens[1].name
         if instance.icon == 'bike':
-            self.root.current = self.root.screens[1].name
-            self.activity_type = "Ride"
+            self.activity_type = "bike"
+            Clock.schedule_interval(self.gps_log, BIKE_LOG_PERIOD)
+            if DEBUG:
+                pass
+            else:
+                self.log_period = BIKE_LOG_PERIOD
 
         if instance.icon == 'run':
-            self.root.current = self.root.screens[1].name
-            self.activity_type = "Run"
+            self.activity_type = "run"
+            Clock.schedule_interval(self.gps_log, RUN_LOG_PERIOD)
+            if DEBUG:
+                pass
+            else:
+                self.log_period = RUN_LOG_PERIOD
 
-    def menu_callback(self):
-        print('Menu callback')
+        if DEBUG:
+            lat = 35.0
+            lon = 3.0
+        else:
+            gps.start(self.log_period*1000, 0)
+            # Should I add a wait of 1 second
+            lat = self.gps_location['lat']
+            lon = self.gps_location['lon']
+
+        self.root.screens[1].ids['log_map'].center_on(lat, lon)
+        self.map_marker = MapMarker(lat=lat, lon=lon)
+        self.root.screens[1].ids['log_map'].add_widget(self.map_marker)
+
+    @mainthread
+    def on_location(self, **kwargs):
+        for k, v in kwargs.items():
+            self.gps_location[k] = v
+
+    @mainthread
+    def on_status(self, stype, status):
+        self.gps_status = 'type={}\n{}'.format(stype, status)
+
+
+    def gps_log(self, dt):
+        print('GPS log')
+
+    def call_about(self):
+        self.about_dialog = MDDialog(title= "About",
+                                     text=f"Sport logger version {MAJOR_VERSION}.{MINOR_VERSION} \n" \
+                                          f"Sport logger is created by Bavo Denys \n" \
+                                          f"The source code can be found at https://github.com/bavodenys")
+        self.about_dialog.open()
 
     def activity_pressed(self):
         print('Activity pressed')
