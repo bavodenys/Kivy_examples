@@ -4,6 +4,7 @@
 WindowManager:
     MainWindow:
     RecordWindow:
+    ActivityWindow:
 
 <MainWindow>:
     name: 'main'
@@ -35,11 +36,17 @@ WindowManager:
         MDLabel:
             text: "Run"
 
+<ActivityWindow>:
+    name: 'activity'
+    MDBoxLayout:
+        MDLabel:
+            text: 'Activity detail'
+
 
 <Run_activity>:
     md_bg_color: app.theme_cls.primary_light
     orientation: 'horizontal'
-    on_press: app.activity_pressed()
+    on_press: app.activity_pressed(root.id)
     size_hint: 1, None
     height: dp(100)
     MDIcon:
@@ -69,7 +76,7 @@ WindowManager:
 <Ride_activity>:
     md_bg_color: app.theme_cls.primary_light
     orientation: 'horizontal'
-    on_press: app.activity_pressed()
+    on_press: app.activity_pressed(root.id)
     size_hint: 1, None
     height: dp(100)
     MDIcon:

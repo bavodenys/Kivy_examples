@@ -45,12 +45,16 @@ class MainWindow(Screen):
 class RecordWindow(Screen):
     pass
 
+class ActivityWindow(Screen):
+    pass
+
 class Run_activity(ButtonBehavior, MDBoxLayout):
     date = StringProperty('')
     start_time = StringProperty('')
     distance = StringProperty('')
     duration = StringProperty('')
     pace = StringProperty('')
+    id = NumericProperty(0)
 
 
 class Ride_activity(ButtonBehavior, MDBoxLayout):
@@ -59,6 +63,7 @@ class Ride_activity(ButtonBehavior, MDBoxLayout):
     distance = StringProperty('')
     duration = StringProperty('')
     avg_spd = StringProperty('')
+    id = NumericProperty(0)
 
 
 class MainApp(MDApp):
@@ -133,13 +138,15 @@ class MainApp(MDApp):
                                          start_time=f"Start time: {activity['start_time']}", \
                                          distance=f"Distance: {activity['distance']}", \
                                          duration=f"Duration: {activity['duration']}", \
-                                         avg_spd=f"Avg speed: {activity['avg_spd']}")
+                                         avg_spd=f"Avg speed: {activity['avg_spd']}", \
+                                         id=activity['id'])
             if activity['type'] == "run":
                 activity_entry = Run_activity(date=f"Date: {activity['date']}", \
                                         start_time=f"Start time: {activity['start_time']}", \
                                         distance=f"Distance: {activity['distance']}", \
                                         duration=f"Duration: {activity['duration']}", \
-                                        pace=f"Pace: {activity['pace']}")
+                                        pace=f"Pace: {activity['pace']}", \
+                                        id=activity['id'])
             self.root.screens[0].ids['activity_overview'].add_widget(activity_entry)
             self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, None), height=dp(5)))
 
@@ -194,8 +201,9 @@ class MainApp(MDApp):
                                           f"The source code can be found at https://github.com/bavodenys")
         self.about_dialog.open()
 
-    def activity_pressed(self):
-        print('Activity pressed')
+    # Function executed when activity is pressed on the homepage (data is fetched via the activity_id)
+    def activity_pressed(self, activity_id):
+        self.root.current = self.root.screens[2].name
 
 
 if __name__ == "__main__":
