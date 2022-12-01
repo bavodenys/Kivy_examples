@@ -11,8 +11,10 @@ from kivy.clock import Clock, mainthread
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.dialog import MDDialog
 from kivy_garden.mapview import MapMarker
+from gps_emulator import gps_emulator
 from plyer import gps
 
+# Temporary lib import
 from temp import *
 
 # Set to True to just test the GUI (not the GPS functionality)
@@ -78,6 +80,8 @@ class MainApp(MDApp):
         super().__init__(**kwargs)
         self.activities = activities
         self.gps_location = {}
+        if DEBUG:
+            self.gps_emulator = gps_emulator(gpx_filename='Run_1.gpx')
 
     def request_android_permissions(self):
         """
@@ -169,13 +173,15 @@ class MainApp(MDApp):
                 self.log_period = RUN_LOG_PERIOD
 
         if DEBUG:
-            lat = 35.0
-            lon = 3.0
+            gps_data = self.gps_emulator.get_gps_data(0)
+            lat = gps_data.latitude
+            lon = gps_data.longitude
         else:
             gps.start(self.log_period*1000, 0)
             # Should I add a wait of 1 second
             lat = self.gps_location['lat']
             lon = self.gps_location['lon']
+            print('BADE')
 
         self.root.screens[1].ids['log_map'].center_on(lat, lon)
         self.map_marker = MapMarker(lat=lat, lon=lon)
