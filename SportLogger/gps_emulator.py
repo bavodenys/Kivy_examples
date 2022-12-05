@@ -11,7 +11,11 @@ class gps_emulator():
         self.gps_data = self.gpx.tracks[0].segments[0].points
 
     def get_gps_data(self, time):
-        return self.gps_data[time]
+        if time >= len(self.gps_data):
+            gps_data = self.gps_data[-1]
+        else:
+            gps_data = self.gps_data[time]
+        return gps_data
 
 
 if __name__ == "__main__":

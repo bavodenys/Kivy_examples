@@ -9,8 +9,10 @@ from kivymd.uix.label import MDLabel
 from kivy.properties import StringProperty, NumericProperty
 from kivy.clock import Clock, mainthread
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivy.graphics.vertex_instructions import Line, Ellipse
 from kivymd.uix.dialog import MDDialog
 from kivy_garden.mapview import MapMarker
+from kivy.graphics import Color
 from gps_emulator import gps_emulator
 from plyer import gps
 
@@ -24,9 +26,10 @@ DEBUG = True
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
 
-#Activity calibrations
+#Calibrations
 RUN_LOG_PERIOD = 1
 BIKE_LOG_PERIOD = 1
+MARKER_RADIUS = 15
 
 # Calibrations window
 if DEBUG:
@@ -80,6 +83,9 @@ class MainApp(MDApp):
         super().__init__(**kwargs)
         self.activities = activities
         self.gps_location = {}
+        self.canvas_points_x = []
+        self.canvas_points_y = []
+        self.trajectory_line = []
         if DEBUG:
             self.gps_emulator = gps_emulator(gpx_filename='Run_1.gpx')
 
@@ -173,7 +179,8 @@ class MainApp(MDApp):
                 self.log_period = RUN_LOG_PERIOD
 
         if DEBUG:
-            gps_data = self.gps_emulator.get_gps_data(0)
+            self.debug_counter = 0
+            gps_data = self.gps_emulator.get_gps_data(self.debug_counter)
             lat = gps_data.latitude
             lon = gps_data.longitude
         else:
@@ -181,11 +188,10 @@ class MainApp(MDApp):
             # Should I add a wait of 1 second
             lat = self.gps_location['lat']
             lon = self.gps_location['lon']
-            print('BADE')
 
         self.root.screens[1].ids['log_map'].center_on(lat, lon)
-        self.map_marker = MapMarker(lat=lat, lon=lon)
-        self.root.screens[1].ids['log_map'].add_widget(self.map_marker)
+        # Adding marker here results in a marker in the bottom left corner?
+
 
     @mainthread
     def on_location(self, **kwargs):
@@ -198,7 +204,33 @@ class MainApp(MDApp):
 
 
     def gps_log(self, dt):
-        print('GPS log')
+        if DEBUG:
+            self.debug_counter+=int(dt)
+            gps_data = self.gps_emulator.get_gps_data(self.debug_counter)
+            lat = gps_data.latitude
+            lon = gps_data.longitude
+        else:
+            lat = self.gps_location['lat']
+            lon = self.gps_location['lon']
+
+        # Center the map on the map marker
+        self.root.screens[1].ids['log_map'].center_on(lat, lon)
+        x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=lat, lon=lon, zoom=16)
+
+        self.canvas_points_x.append(x)
+        self.canvas_points_y.append(y)
+
+        # The line points should be updated because the map is moving
+
+        with self.root.screens[1].canvas:
+            color = Color(1, 0, 0)
+            self.marker = Ellipse(pos=[x-MARKER_RADIUS/2,y-MARKER_RADIUS/2], size=[MARKER_RADIUS, MARKER_RADIUS])
+            if len(self.canvas_points_x) >= 2 and len(self.canvas_points_y) >= 2:
+                color = Color(0, 1, 0)
+                line = Line(points=(self.canvas_points_x[-2], self.canvas_points_y[-2], self.canvas_points_x[-1], self.canvas_points_y[-1]), width=3)
+                self.trajectory_line.append(line)
+
+
 
     def call_about(self):
         self.about_dialog = MDDialog(title= "About",
