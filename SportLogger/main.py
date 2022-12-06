@@ -189,9 +189,8 @@ class MainApp(MDApp):
             # Should I add a wait of 1 second
             lat = self.gps_location['lat']
             lon = self.gps_location['lon']
-
+        # Center the map on the init GPS position
         self.root.screens[1].ids['log_map'].center_on(lat, lon)
-
 
     @mainthread
     def on_location(self, **kwargs):
@@ -242,6 +241,7 @@ class MainApp(MDApp):
                 self.trajectory_line = []
                 color = Color(0, 1, 0)
                 for i in range(len(self.canvas_points_x)-1):
+                    # Only display if the points will be on the map
                     if (abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i]) <= self.root.screens[1].ids['log_map'].width/2 and \
                         abs(self.root.screens[1].ids['log_map'].center_y - self.canvas_points_y[i]) <= self.root.screens[1].ids['log_map'].height/2 and \
                         abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i+1]) <= self.root.screens[1].ids['log_map'].width/2 and \
@@ -251,7 +251,6 @@ class MainApp(MDApp):
             # Update of red marker
             color = Color(1, 0, 0)
             self.marker = Ellipse(pos=[x-MARKER_RADIUS/2,y-MARKER_RADIUS/2], size=[MARKER_RADIUS, MARKER_RADIUS])
-
 
 
     def call_about(self):
