@@ -15,6 +15,7 @@ from kivy_garden.mapview import MapMarker
 from kivy.graphics import Color
 from gps_emulator import gps_emulator
 from plyer import gps
+import numpy as np
 
 # Temporary lib import
 from temp import *
@@ -83,8 +84,8 @@ class MainApp(MDApp):
         super().__init__(**kwargs)
         self.activities = activities
         self.gps_location = {}
-        self.canvas_points_x = []
-        self.canvas_points_y = []
+        self.canvas_points_x = np.array([])
+        self.canvas_points_y = np.array([])
         self.trajectory_line = []
         if DEBUG:
             self.gps_emulator = gps_emulator(gpx_filename='Run_1.gpx')
@@ -190,7 +191,6 @@ class MainApp(MDApp):
             lon = self.gps_location['lon']
 
         self.root.screens[1].ids['log_map'].center_on(lat, lon)
-        # Adding marker here results in a marker in the bottom left corner?
 
 
     @mainthread
@@ -213,22 +213,44 @@ class MainApp(MDApp):
             lat = self.gps_location['lat']
             lon = self.gps_location['lon']
 
-        # Center the map on the map marker
-        self.root.screens[1].ids['log_map'].center_on(lat, lon)
+        # Get the x, y position of the new marker position
         x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=lat, lon=lon, zoom=16)
+        # Determine how much the map will move in x and y direction
+        move_x = self.root.screens[1].ids['log_map'].center_x - x
+        move_y = self.root.screens[1].ids['log_map'].center_y - y
+        # Center the map on the marker position
+        self.root.screens[1].ids['log_map'].center_on(lat, lon)
+        # Modify all points because the map moved
+        self.canvas_points_x = self.canvas_points_x + move_x
+        self.canvas_points_y = self.canvas_points_y + move_y
+        # Add a new point to the numpy array
+        self.canvas_points_x = np.append(self.canvas_points_x, x)
+        self.canvas_points_y = np.append(self.canvas_points_y, y)
 
-        self.canvas_points_x.append(x)
-        self.canvas_points_y.append(y)
+        # Try except structure because the first iteration the trajectory line is not existing yet
+        try:
+            for line in self.trajectory_line:
+                self.root.screens[1].canvas.remove(line)
+        except:
+            pass
 
-        # The line points should be updated because the map is moving
-
+        # Update of marker and line
         with self.root.screens[1].canvas:
+            # Update of trajectory line
+            array_size = self.canvas_points_x.size
+            if array_size >= 2:
+                self.trajectory_line = []
+                color = Color(0, 1, 0)
+                for i in range(len(self.canvas_points_x)-1):
+                    if (abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i]) <= self.root.screens[1].ids['log_map'].width/2 and \
+                        abs(self.root.screens[1].ids['log_map'].center_y - self.canvas_points_y[i]) <= self.root.screens[1].ids['log_map'].height/2 and \
+                        abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i+1]) <= self.root.screens[1].ids['log_map'].width/2 and \
+                        abs(self.root.screens[1].ids['log_map'].center_y - self.canvas_points_y[i+1]) <= self.root.screens[1].ids['log_map'].height/2):
+                        line = Line(points=(self.canvas_points_x[i], self.canvas_points_y[i], self.canvas_points_x[i+1], self.canvas_points_y[i+1]), width=3)
+                        self.trajectory_line.append(line)
+            # Update of red marker
             color = Color(1, 0, 0)
             self.marker = Ellipse(pos=[x-MARKER_RADIUS/2,y-MARKER_RADIUS/2], size=[MARKER_RADIUS, MARKER_RADIUS])
-            if len(self.canvas_points_x) >= 2 and len(self.canvas_points_y) >= 2:
-                color = Color(0, 1, 0)
-                line = Line(points=(self.canvas_points_x[-2], self.canvas_points_y[-2], self.canvas_points_x[-1], self.canvas_points_y[-1]), width=3)
-                self.trajectory_line.append(line)
 
 
 
