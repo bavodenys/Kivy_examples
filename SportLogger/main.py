@@ -11,7 +11,6 @@ from kivy.clock import Clock, mainthread
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.graphics.vertex_instructions import Line, Ellipse
 from kivymd.uix.dialog import MDDialog
-from kivy_garden.mapview import MapMarker
 from kivy.graphics import Color
 from gps_emulator import gps_emulator
 from plyer import gps
@@ -22,6 +21,8 @@ from temp import *
 
 # Set to True to just test the GUI (not the GPS functionality)
 DEBUG = True
+# To enable the trajectory line
+ENABLE_TRAJECTORY = True
 
 # Version
 MAJOR_VERSION = 0
@@ -73,7 +74,7 @@ class Ride_activity(ButtonBehavior, MDBoxLayout):
 
 
 class MainApp(MDApp):
-    activity_type = StringProperty('run')
+    activity_type = StringProperty('Run')
 
     activities_record = {
         'Run': 'run',
@@ -87,8 +88,7 @@ class MainApp(MDApp):
         self.canvas_points_x = np.array([])
         self.canvas_points_y = np.array([])
         self.trajectory_line = []
-        if DEBUG:
-            self.gps_emulator = gps_emulator(gpx_filename='Run_1.gpx')
+
 
     def request_android_permissions(self):
         """
@@ -120,7 +120,7 @@ class MainApp(MDApp):
     def build(self):
         self.title = "Sport logger"
         self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "Green"
+        self.theme_cls.primary_palette = "Red"
 
         if not(DEBUG):
             try:
@@ -164,18 +164,18 @@ class MainApp(MDApp):
     def callback(self, instance):
         self.root.current = self.root.screens[1].name
         if instance.icon == 'bike':
-            self.activity_type = "bike"
+            self.activity_type = "Ride"
             Clock.schedule_interval(self.gps_log, BIKE_LOG_PERIOD)
             if DEBUG:
-                pass
+                self.gps_emulator = gps_emulator(gpx_filename='Ride_1.gpx')
             else:
                 self.log_period = BIKE_LOG_PERIOD
 
         if instance.icon == 'run':
-            self.activity_type = "run"
+            self.activity_type = "Run"
             Clock.schedule_interval(self.gps_log, RUN_LOG_PERIOD)
             if DEBUG:
-                pass
+                self.gps_emulator = gps_emulator(gpx_filename='Run_1.gpx')
             else:
                 self.log_period = RUN_LOG_PERIOD
 
@@ -212,45 +212,60 @@ class MainApp(MDApp):
             lat = self.gps_location['lat']
             lon = self.gps_location['lon']
 
-        # Get the x, y position of the new marker position
-        x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=lat, lon=lon, zoom=16)
-        # Determine how much the map will move in x and y direction
-        move_x = self.root.screens[1].ids['log_map'].center_x - x
-        move_y = self.root.screens[1].ids['log_map'].center_y - y
+        if ENABLE_TRAJECTORY:
+            # Get the x, y position of the new marker position
+            x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=lat, lon=lon, zoom=16)
+            # Determine how much the map will move in x and y direction
+            move_x = self.root.screens[1].ids['log_map'].center_x - x
+            move_y = self.root.screens[1].ids['log_map'].center_y - y
+
         # Center the map on the marker position
         self.root.screens[1].ids['log_map'].center_on(lat, lon)
-        # Modify all points because the map moved
-        self.canvas_points_x = self.canvas_points_x + move_x
-        self.canvas_points_y = self.canvas_points_y + move_y
-        # Add a new point to the numpy array
-        self.canvas_points_x = np.append(self.canvas_points_x, x)
-        self.canvas_points_y = np.append(self.canvas_points_y, y)
 
-        # Try except structure because the first iteration the trajectory line is not existing yet
-        try:
-            for line in self.trajectory_line:
-                self.root.screens[1].canvas.remove(line)
-        except:
-            pass
+        if ENABLE_TRAJECTORY:
+            # Modify all points because the map moved
+            self.canvas_points_x = self.canvas_points_x + move_x
+            self.canvas_points_y = self.canvas_points_y + move_y
+            # Add a new point to the numpy array
+            self.canvas_points_x = np.append(self.canvas_points_x, x)
+            self.canvas_points_y = np.append(self.canvas_points_y, y)
+
+            # Try except structure because the first iteration the trajectory line is not existing yet
+            try:
+                for line in self.trajectory_line:
+                    self.root.screens[1].canvas.remove(line)
+            except:
+                pass
 
         # Update of marker and line
         with self.root.screens[1].canvas:
-            # Update of trajectory line
-            array_size = self.canvas_points_x.size
-            if array_size >= 2:
-                self.trajectory_line = []
-                color = Color(0, 1, 0)
-                for i in range(len(self.canvas_points_x)-1):
-                    # Only display if the points will be on the map
-                    if (abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i]) <= self.root.screens[1].ids['log_map'].width/2 and \
-                        abs(self.root.screens[1].ids['log_map'].center_y - self.canvas_points_y[i]) <= self.root.screens[1].ids['log_map'].height/2 and \
-                        abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i+1]) <= self.root.screens[1].ids['log_map'].width/2 and \
-                        abs(self.root.screens[1].ids['log_map'].center_y - self.canvas_points_y[i+1]) <= self.root.screens[1].ids['log_map'].height/2):
-                        line = Line(points=(self.canvas_points_x[i], self.canvas_points_y[i], self.canvas_points_x[i+1], self.canvas_points_y[i+1]), width=3)
-                        self.trajectory_line.append(line)
+            if ENABLE_TRAJECTORY:
+                # Update of trajectory line
+                array_size = self.canvas_points_x.size
+                if array_size >= 2:
+                    self.trajectory_line = []
+                    color = Color(0, 1, 0)
+                    for i in range(len(self.canvas_points_x)-1):
+                        # Only display if the points will be on the map
+                        if (abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i]) <= self.root.screens[1].ids['log_map'].width/2 and \
+                            abs(self.root.screens[1].ids['log_map'].center_y - self.canvas_points_y[i]) <= self.root.screens[1].ids['log_map'].height/2 and \
+                            abs(self.root.screens[1].ids['log_map'].center_x - self.canvas_points_x[i+1]) <= self.root.screens[1].ids['log_map'].width/2 and \
+                            abs(self.root.screens[1].ids['log_map'].center_y - self.canvas_points_y[i+1]) <= self.root.screens[1].ids['log_map'].height/2):
+                            line = Line(points=(self.canvas_points_x[i], self.canvas_points_y[i], self.canvas_points_x[i+1], self.canvas_points_y[i+1]), width=3)
+                            self.trajectory_line.append(line)
             # Update of red marker
             color = Color(1, 0, 0)
-            self.marker = Ellipse(pos=[x-MARKER_RADIUS/2,y-MARKER_RADIUS/2], size=[MARKER_RADIUS, MARKER_RADIUS])
+            x = self.root.screens[1].ids['log_map'].center_x-MARKER_RADIUS/2
+            y = self.root.screens[1].ids['log_map'].center_y-MARKER_RADIUS/2
+            self.marker = Ellipse(pos=[x,y], size=[MARKER_RADIUS, MARKER_RADIUS])
+
+    def start_pressed(self):
+        pass
+
+    # Activity is stopped
+    def stop_pressed(self):
+
+        self.root.current = self.root.screens[2].name
 
 
     def call_about(self):

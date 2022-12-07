@@ -25,16 +25,36 @@ WindowManager:
         callback: app.callback
 
 <RecordWindow>:
+    canvas.before:
+        Color:
+            rgba: app.theme_cls.primary_light
+        Rectangle:
+            pos: self.pos
+            size: self.size
     name: 'record'
     MDBoxLayout:
         orientation: 'vertical'
+        MDLabel:
+            text: app.activity_type
+            size_hint: 1, None
+            font_size: dp(80)
+            height: dp(100)
+            halign: "center"
         MapView:
             id: log_map
             lat: 50.00
             lon: 3.00
             zoom: 16
-        MDLabel:
-            text: "Run"
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDRectangleFlatButton:
+                text: 'Start'
+                size_hint: 0.5, None
+                on_press: app.start_pressed()
+            MDRectangleFlatButton:
+                text: 'Stop'
+                size_hint: 0.5, None
+                on_press: app.stop_pressed()
 
 <ActivityWindow>:
     name: 'activity'
