@@ -1,0 +1,6 @@
+How to create virtual environment
+1. virtualenv <virtual_environment>			ex. virtualenv snake_venv
+2. source <virtual_environment>/bin/activate 		ex. source snake_venv/bin/activate
+3. pip install ...
+4. pip freeze -> requirements.txt 	(to export pip list to requirements.txt file)
+5. pip install -r requirements.txt  	(to install the libraries listed in requirements.txt)
