@@ -74,8 +74,14 @@ class Ride_activity(ButtonBehavior, MDBoxLayout):
 
 
 class MainApp(MDApp):
-    activity_type = StringProperty('Run')
+    activity_type = StringProperty('')
+    activity_date = StringProperty('')
+    activity_start_time = StringProperty('')
+    activity_duration = StringProperty('')
+    activity_distance = StringProperty('')
+    activity_speed = StringProperty('')
 
+    # Floating button actions
     activities_record = {
         'Run': 'run',
         'Ride': 'bike'
@@ -280,8 +286,18 @@ class MainApp(MDApp):
         self.root.current = self.root.screens[2].name
         if self.activities[activity_id]['type'] == "run":
             self.activity_type = "Run"
+            self.activity_speed = self.activities[activity_id]['pace']
         elif self.activities[activity_id]['type'] == "ride":
             self.activity_type = "Ride"
+            self.activity_speed = self.activities[activity_id]['avg_spd']
+        self.activity_date = self.activities[activity_id]['date']
+        self.activity_start_time = self.activities[activity_id]['start_time']
+        self.activity_duration = self.activities[activity_id]['duration']
+        self.activity_distance = self.activities[activity_id]['distance']
+        # Center the map on the init GPS position
+        lat = 70
+        lon = 25
+        self.root.screens[2].ids['act_map'].center_on(lat, lon)
 
 
 if __name__ == "__main__":

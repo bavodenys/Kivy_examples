@@ -79,35 +79,67 @@ WindowManager:
             zoom: 16
             size_hint: 1, 1
         MDBoxLayout:
-            orientation: 'horizontal'
-            MDLabel:
-                text: "Date"
-            MDLabel:
-                text: "Date"
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDLabel:
-                text: "Start time"
-            MDLabel:
-                text: "Start time"
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDLabel:
-                text: "Duration"
-            MDLabel:
-                text: "Duration"
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDLabel:
-                text: "Distance"
-            MDLabel:
-                text: "Distance"
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDLabel:
-                text: "Avg Speed"
-            MDLabel:
-                text: "Pace"
+            orientation: 'vertical'
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    text: "Date:"
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                MDLabel:
+                    text: app.activity_date
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    text: "Start time:"
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                MDLabel:
+                    text: app.activity_start_time
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    text: "Duration:"
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                MDLabel:
+                    text: app.activity_duration
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    text: "Distance:"
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                MDLabel:
+                    text: app.activity_distance
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    text: "Avg Speed:"
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                MDLabel:
+                    text: app.activity_speed
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
 
 
 
