@@ -57,10 +57,58 @@ WindowManager:
                 on_press: app.stop_pressed()
 
 <ActivityWindow>:
+    canvas.before:
+        Color:
+            rgba: app.theme_cls.primary_light
+        Rectangle:
+            pos: self.pos
+            size: self.size
     name: 'activity'
     MDBoxLayout:
+        orientation: 'vertical'
         MDLabel:
-            text: 'Activity detail'
+            text: app.activity_type
+            size_hint: 1, None
+            font_size: dp(80)
+            height: dp(100)
+            halign: "center"
+        MapView:
+            id: act_map
+            lat: 50.00
+            lon: 3.00
+            zoom: 16
+            size_hint: 1, 1
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: "Date"
+            MDLabel:
+                text: "Date"
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: "Start time"
+            MDLabel:
+                text: "Start time"
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: "Duration"
+            MDLabel:
+                text: "Duration"
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: "Distance"
+            MDLabel:
+                text: "Distance"
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: "Avg Speed"
+            MDLabel:
+                text: "Pace"
+
 
 
 <Run_activity>:
@@ -122,4 +170,3 @@ WindowManager:
             orientation: 'horizontal'
             MDLabel:
                 text: root.avg_spd
-

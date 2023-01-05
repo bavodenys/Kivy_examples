@@ -143,21 +143,21 @@ class MainApp(MDApp):
 
     def init_gui(self, dt):
         self.root.screens[0].ids['record_activity_menu'].icon = 'record'
-        for activity in self.activities:
-            if activity['type'] == "ride":
-                activity_entry = Ride_activity(date=f"Date: {activity['date']}", \
-                                         start_time=f"Start time: {activity['start_time']}", \
-                                         distance=f"Distance: {activity['distance']}", \
-                                         duration=f"Duration: {activity['duration']}", \
-                                         avg_spd=f"Avg speed: {activity['avg_spd']}", \
-                                         id=activity['id'])
-            if activity['type'] == "run":
-                activity_entry = Run_activity(date=f"Date: {activity['date']}", \
-                                        start_time=f"Start time: {activity['start_time']}", \
-                                        distance=f"Distance: {activity['distance']}", \
-                                        duration=f"Duration: {activity['duration']}", \
-                                        pace=f"Pace: {activity['pace']}", \
-                                        id=activity['id'])
+        for activity_id in self.activities:
+            if self.activities[activity_id]['type'] == "ride":
+                activity_entry = Ride_activity(date=f"Date: {self.activities[activity_id]['date']}", \
+                                         start_time=f"Start time: {self.activities[activity_id]['start_time']}", \
+                                         distance=f"Distance: {self.activities[activity_id]['distance']}", \
+                                         duration=f"Duration: {self.activities[activity_id]['duration']}", \
+                                         avg_spd=f"Avg speed: {self.activities[activity_id]['avg_spd']}", \
+                                         id=activity_id)
+            if self.activities[activity_id]['type'] == "run":
+                activity_entry = Run_activity(date=f"Date: {self.activities[activity_id]['date']}", \
+                                        start_time=f"Start time: {self.activities[activity_id]['start_time']}", \
+                                        distance=f"Distance: {self.activities[activity_id]['distance']}", \
+                                        duration=f"Duration: {self.activities[activity_id]['duration']}", \
+                                        pace=f"Pace: {self.activities[activity_id]['pace']}", \
+                                        id=activity_id)
             self.root.screens[0].ids['activity_overview'].add_widget(activity_entry)
             self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, None), height=dp(5)))
 
@@ -264,20 +264,24 @@ class MainApp(MDApp):
 
     # Activity is stopped
     def stop_pressed(self):
-
         self.root.current = self.root.screens[2].name
 
 
+    # About
     def call_about(self):
         self.about_dialog = MDDialog(title= "About",
                                      text=f"Sport logger version {MAJOR_VERSION}.{MINOR_VERSION} \n" \
                                           f"Sport logger is created by Bavo Denys \n" \
-                                          f"The source code can be found at https://github.com/bavodenys")
+                                          f"Source code: https://github.com/bavodenys")
         self.about_dialog.open()
 
     # Function executed when activity is pressed on the homepage (data is fetched via the activity_id)
     def activity_pressed(self, activity_id):
         self.root.current = self.root.screens[2].name
+        if self.activities[activity_id]['type'] == "run":
+            self.activity_type = "Run"
+        elif self.activities[activity_id]['type'] == "ride":
+            self.activity_type = "Ride"
 
 
 if __name__ == "__main__":
