@@ -15,6 +15,7 @@ from kivy.graphics import Color
 from gps_emulator import gps_emulator
 from plyer import gps
 import numpy as np
+from functions import *
 
 # Temporary lib import
 from temp import *
@@ -207,7 +208,6 @@ class MainApp(MDApp):
     def on_status(self, stype, status):
         self.gps_status = 'type={}\n{}'.format(stype, status)
 
-
     def gps_log(self, dt):
         if DEBUG:
             self.debug_counter+=int(dt)
@@ -272,7 +272,6 @@ class MainApp(MDApp):
     def stop_pressed(self):
         self.root.current = self.root.screens[2].name
 
-
     # About
     def call_about(self):
         self.about_dialog = MDDialog(title= "About",
@@ -294,10 +293,18 @@ class MainApp(MDApp):
         self.activity_start_time = self.activities[activity_id]['start_time']
         self.activity_duration = self.activities[activity_id]['duration']
         self.activity_distance = self.activities[activity_id]['distance']
-        # Center the map on the init GPS position
-        lat = 70
-        lon = 25
-        self.root.screens[2].ids['act_map'].center_on(lat, lon)
+        self.polyline = self.activities[activity_id]['polyline']
+        # Center the map on the activity
+        lat_center, lon_center, lat_lon_list = determine_lat_lon_from_polyline(self.polyline)
+        self.root.screens[2].ids['act_map'].center_on(lat_center, lon_center)
+        self.activity_line = []
+        color = Color(0, 1, 0)
+        for i in range(len(lat_lon_list)-1):
+            x1, y1 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i][0], lon=lat_lon_list[i][1], zoom=12)
+            x2, y2 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i+1][0], lon=lat_lon_list[i+1][1], zoom=12)
+            line = Line(points=(x1, y1, x2, y2), width=3)
+            self.activity_line.append(line)
+
 
     # Function to go back to the homepage with overview of all activities
     def go_back_home(self):
