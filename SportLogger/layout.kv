@@ -140,6 +140,14 @@ WindowManager:
                     size_hint: 0.6, None
                     height: dp(50)
                     font_size: dp(30)
+    MDFloatingActionButton:
+        icon: "home"
+        md_bg_color: app.theme_cls.primary_color
+        on_press: app.go_back_home()
+        pos: (root.width - 70, 15)
+        radius: dp(100)
+
+
 
 
 

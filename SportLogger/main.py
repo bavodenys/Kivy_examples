@@ -299,6 +299,10 @@ class MainApp(MDApp):
         lon = 25
         self.root.screens[2].ids['act_map'].center_on(lat, lon)
 
+    # Function to go back to the homepage with overview of all activities
+    def go_back_home(self):
+        self.root.current = self.root.screens[0].name
+
 
 if __name__ == "__main__":
     try:
