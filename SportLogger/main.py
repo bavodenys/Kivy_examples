@@ -1,4 +1,5 @@
 from kivymd.app import MDApp
+from kivy.app import App
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
@@ -54,7 +55,25 @@ class RecordWindow(Screen):
     pass
 
 class ActivityWindow(Screen):
-    pass
+
+    # Function executed when opening activity screen
+    def on_enter(self):
+        # Get the running App
+        MDApp = App.get_running_app()
+        # Determine from the polyline the lat/lon center and the list of coordinates
+        lat_center, lon_center, lat_lon_list = determine_lat_lon_from_polyline(MDApp.polyline)
+        # Center the map on the center of the activity
+        MDApp.root.screens[2].ids['act_map'].center_on(lat_center, lon_center)
+        with MDApp.root.screens[2].canvas:
+            # Set the activity line color to red
+            color = Color(1, 0, 0)
+            # For loop over all points in the lat/lon list
+            for i in range(len(lat_lon_list)-1):
+                x1, y1 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i][0], lon=lat_lon_list[i][1], zoom=12)
+                x2, y2 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i+1][0], lon=lat_lon_list[i+1][1], zoom=12)
+                line = Line(points=(x1,y1,x2,y2), width=3)
+                MDApp.activity_line.append(line)
+
 
 class Run_activity(ButtonBehavior, MDBoxLayout):
     date = StringProperty('')
@@ -294,21 +313,15 @@ class MainApp(MDApp):
         self.activity_duration = self.activities[activity_id]['duration']
         self.activity_distance = self.activities[activity_id]['distance']
         self.polyline = self.activities[activity_id]['polyline']
-        # Center the map on the activity
-        lat_center, lon_center, lat_lon_list = determine_lat_lon_from_polyline(self.polyline)
-        self.root.screens[2].ids['act_map'].center_on(lat_center, lon_center)
         self.activity_line = []
-        color = Color(0, 1, 0)
-        for i in range(len(lat_lon_list)-1):
-            x1, y1 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i][0], lon=lat_lon_list[i][1], zoom=12)
-            x2, y2 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i+1][0], lon=lat_lon_list[i+1][1], zoom=12)
-            line = Line(points=(x1, y1, x2, y2), width=3)
-            self.activity_line.append(line)
 
 
     # Function to go back to the homepage with overview of all activities
     def go_back_home(self):
         self.root.current = self.root.screens[0].name
+        # Remove the activity line on the MapView
+        for line in self.activity_line:
+            self.root.screens[2].canvas.remove(line)
 
 
 if __name__ == "__main__":
