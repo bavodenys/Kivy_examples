@@ -60,17 +60,15 @@ class ActivityWindow(Screen):
     def on_enter(self):
         # Get the running App
         MDApp = App.get_running_app()
-        # Determine from the polyline the lat/lon center and the list of coordinates
-        lat_center, lon_center, lat_lon_list = determine_lat_lon_from_polyline(MDApp.polyline)
         # Center the map on the center of the activity
-        MDApp.root.screens[2].ids['act_map'].center_on(lat_center, lon_center)
+        MDApp.root.screens[2].ids['act_map'].center_on(MDApp.act_lat_center, MDApp.act_lon_center)
         with MDApp.root.screens[2].canvas:
             # Set the activity line color to red
             color = Color(1, 0, 0)
             # For loop over all points in the lat/lon list
-            for i in range(len(lat_lon_list)-1):
-                x1, y1 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i][0], lon=lat_lon_list[i][1], zoom=12)
-                x2, y2 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=lat_lon_list[i+1][0], lon=lat_lon_list[i+1][1], zoom=12)
+            for i in range(len(MDApp.lat_lon_list)-1):
+                x1, y1 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i][0], lon=MDApp.lat_lon_list[i][1], zoom=12)
+                x2, y2 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i+1][0], lon=MDApp.lat_lon_list[i+1][1], zoom=12)
                 line = Line(points=(x1,y1,x2,y2), width=3)
                 MDApp.activity_line.append(line)
 
@@ -313,7 +311,26 @@ class MainApp(MDApp):
         self.activity_duration = self.activities[activity_id]['duration']
         self.activity_distance = self.activities[activity_id]['distance']
         self.polyline = self.activities[activity_id]['polyline']
+        # Determine from the polyline the lat/lon center and the list of coordinates
+        self.act_lat_center, self.act_lon_center, self.lat_lon_list = determine_lat_lon_from_polyline(self.polyline)
         self.activity_line = []
+
+    # When starting to move the map -> remove the activity line
+    def act_map_touch_down(self):
+        for line in self.activity_line:
+            self.root.screens[2].canvas.remove(line)
+        self.activity_line = []
+
+    # When the user stops moving the map -> draw the activity line again on the map
+    def act_map_touch_up(self):
+        with self.root.screens[2].canvas:
+            color = Color(1, 0, 0)
+            # For loop over all points in the lat/lon list
+            for i in range(len(self.lat_lon_list)-1):
+                x1, y1 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=self.lat_lon_list[i][0], lon=self.lat_lon_list[i][1], zoom=12)
+                x2, y2 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=self.lat_lon_list[i+1][0], lon=self.lat_lon_list[i+1][1], zoom=12)
+                line = Line(points=(x1,y1,x2,y2), width=3)
+                self.activity_line.append(line)
 
 
     # Function to go back to the homepage with overview of all activities
@@ -322,6 +339,8 @@ class MainApp(MDApp):
         # Remove the activity line on the MapView
         for line in self.activity_line:
             self.root.screens[2].canvas.remove(line)
+        self.activity_line = []
+        self.lat_lon_list = []
 
 
 if __name__ == "__main__":

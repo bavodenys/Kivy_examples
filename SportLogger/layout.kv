@@ -78,6 +78,8 @@ WindowManager:
             lon: 3.00
             zoom: 12
             size_hint: 1, 1
+            on_touch_up: app.act_map_touch_up()
+            on_touch_down: app.act_map_touch_down()
         MDBoxLayout:
             orientation: 'vertical'
             MDBoxLayout:
@@ -146,9 +148,6 @@ WindowManager:
         on_press: app.go_back_home()
         pos: (root.width - 70, 15)
         radius: dp(100)
-
-
-
 
 
 <Run_activity>:
