@@ -60,6 +60,8 @@ class ActivityWindow(Screen):
     def on_enter(self):
         # Get the running App
         MDApp = App.get_running_app()
+        # Set the zoom of the map
+        MDApp.root.screens[2].ids['act_map'].set_zoom_at(MDApp.activity_zoom, 0, 0)
         # Center the map on the center of the activity
         MDApp.root.screens[2].ids['act_map'].center_on(MDApp.act_lat_center, MDApp.act_lon_center)
         with MDApp.root.screens[2].canvas:
@@ -67,8 +69,8 @@ class ActivityWindow(Screen):
             color = Color(1, 0, 0)
             # For loop over all points in the lat/lon list
             for i in range(len(MDApp.lat_lon_list)-1):
-                x1, y1 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i][0], lon=MDApp.lat_lon_list[i][1], zoom=12)
-                x2, y2 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i+1][0], lon=MDApp.lat_lon_list[i+1][1], zoom=12)
+                x1, y1 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i][0], lon=MDApp.lat_lon_list[i][1], zoom=MDApp.activity_zoom)
+                x2, y2 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i+1][0], lon=MDApp.lat_lon_list[i+1][1], zoom=MDApp.activity_zoom)
                 line = Line(points=(x1,y1,x2,y2), width=3)
                 MDApp.activity_line.append(line)
 
@@ -312,7 +314,7 @@ class MainApp(MDApp):
         self.activity_distance = self.activities[activity_id]['distance']
         self.polyline = self.activities[activity_id]['polyline']
         # Determine from the polyline the lat/lon center and the list of coordinates
-        self.act_lat_center, self.act_lon_center, self.lat_lon_list = determine_lat_lon_from_polyline(self.polyline)
+        self.act_lat_center, self.act_lon_center, self.lat_lon_list, self.activity_zoom = determine_lat_lon_from_polyline(self.polyline)
         self.activity_line = []
 
     # When starting to move the map -> remove the activity line
@@ -327,8 +329,8 @@ class MainApp(MDApp):
             color = Color(1, 0, 0)
             # For loop over all points in the lat/lon list
             for i in range(len(self.lat_lon_list)-1):
-                x1, y1 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=self.lat_lon_list[i][0], lon=self.lat_lon_list[i][1], zoom=12)
-                x2, y2 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=self.lat_lon_list[i+1][0], lon=self.lat_lon_list[i+1][1], zoom=12)
+                x1, y1 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=self.lat_lon_list[i][0], lon=self.lat_lon_list[i][1], zoom=self.activity_zoom)
+                x2, y2 = self.root.screens[2].ids['act_map'].get_window_xy_from(lat=self.lat_lon_list[i+1][0], lon=self.lat_lon_list[i+1][1], zoom=self.activity_zoom)
                 line = Line(points=(x1,y1,x2,y2), width=3)
                 self.activity_line.append(line)
 
