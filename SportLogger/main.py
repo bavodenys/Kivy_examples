@@ -100,6 +100,9 @@ class MainApp(MDApp):
     activity_duration = StringProperty('')
     activity_distance = StringProperty('')
     activity_speed = StringProperty('')
+    record_duration = StringProperty('')
+    record_distance = StringProperty('')
+    record_speed = StringProperty('')
 
     # Floating button actions
     activities_record = {
@@ -114,6 +117,8 @@ class MainApp(MDApp):
         self.canvas_points_x = np.array([])
         self.canvas_points_y = np.array([])
         self.trajectory_line = []
+        self.record_active = False
+        self.record_paused = False
 
 
     def request_android_permissions(self):
@@ -188,9 +193,11 @@ class MainApp(MDApp):
             self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, None), height=dp(5)))
 
     def callback(self, instance):
+        self.root.screens[0].ids['record_activity_menu'].close_stack()
         self.root.current = self.root.screens[1].name
         if instance.icon == 'bike':
             self.activity_type = "Ride"
+            self.root.screens[1].ids['record_speed'].text = 'Avg Speed:'
             Clock.schedule_interval(self.gps_log, BIKE_LOG_PERIOD)
             if DEBUG:
                 self.gps_emulator = gps_emulator(gpx_filename='Ride_1.gpx')
@@ -199,6 +206,7 @@ class MainApp(MDApp):
 
         if instance.icon == 'run':
             self.activity_type = "Run"
+            self.root.screens[1].ids['record_speed'].text = 'Pace:'
             Clock.schedule_interval(self.gps_log, RUN_LOG_PERIOD)
             if DEBUG:
                 self.gps_emulator = gps_emulator(gpx_filename='Run_1.gpx')
@@ -284,12 +292,24 @@ class MainApp(MDApp):
             y = self.root.screens[1].ids['log_map'].center_y-MARKER_RADIUS/2
             self.marker = Ellipse(pos=[x,y], size=[MARKER_RADIUS, MARKER_RADIUS])
 
+    # Record start button pressed
     def start_pressed(self):
-        pass
+        if self.root.screens[1].ids['record_start'].text == "Start":
+            self.root.screens[1].ids['record_start'].text = 'Pause'
+            self.record_paused = False
+            self.record_active = True
+        else:
+            self.root.screens[1].ids['record_start'].text = 'Start'
+            self.record_paused = True
 
-    # Activity is stopped
+    # Record stop button is pressed
     def stop_pressed(self):
-        self.root.current = self.root.screens[2].name
+        if self.record_active:
+            self.record_active = False
+            self.root.current = self.root.screens[2].name
+        else:
+            self.root.current = self.root.screens[0].name
+
 
     # About
     def call_about(self):
@@ -304,9 +324,11 @@ class MainApp(MDApp):
         self.root.current = self.root.screens[2].name
         if self.activities[activity_id]['type'] == "run":
             self.activity_type = "Run"
+            self.root.screens[2].ids['activity_speed'].text = 'Pace:'
             self.activity_speed = self.activities[activity_id]['pace']
         elif self.activities[activity_id]['type'] == "ride":
             self.activity_type = "Ride"
+            self.root.screens[2].ids['activity_speed'].text = 'Avg Speed:'
             self.activity_speed = self.activities[activity_id]['avg_spd']
         self.activity_date = self.activities[activity_id]['date']
         self.activity_start_time = self.activities[activity_id]['start_time']
@@ -345,6 +367,7 @@ class MainApp(MDApp):
         self.lat_lon_list = []
 
 
+# MAIN
 if __name__ == "__main__":
     try:
         app = MainApp(activities=activities)

@@ -46,16 +46,66 @@ WindowManager:
             lon: 3.00
             zoom: 16
         MDBoxLayout:
-            orientation: 'horizontal'
-            MDRectangleFlatButton:
-                text: 'Start'
-                size_hint: 0.5, None
-                on_press: app.start_pressed()
-            MDRectangleFlatButton:
-                text: 'Stop'
-                size_hint: 0.5, None
-                on_press: app.stop_pressed()
-
+            orientation: 'vertical'
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    text: 'Duration:'
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                    pos_hint: {'center_y': 0.5}
+                MDLabel:
+                    text: app.record_duration
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
+                    pos_hint: {'center_y': 0.5}
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    text: 'Distance:'
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                    pos_hint: {'center_y': 0.5}
+                MDLabel:
+                    text: app.record_distance
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
+                    pos_hint: {'center_y': 0.5}
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDLabel:
+                    id: record_speed
+                    text: 'Avg Speed:'
+                    size_hint: 0.4, None
+                    height: dp(50)
+                    font_size: dp(30)
+                    pos_hint: {'center_y': 0.5}
+                MDLabel:
+                    text: app.record_speed
+                    size_hint: 0.6, None
+                    height: dp(50)
+                    font_size: dp(30)
+                    pos_hint: {'center_y': 0.5}
+            MDBoxLayout:
+                orientation: 'horizontal'
+                MDFillRoundFlatButton:
+                    id: record_start
+                    text: 'Start'
+                    size_hint: 0.5, None
+                    on_press: app.start_pressed()
+                    pos_hint: {'center_y': 0.5}
+                    font_size: dp(30)
+                MDFillRoundFlatButton:
+                    id: record_stop
+                    text: 'Stop'
+                    size_hint: 0.5, None
+                    on_press: app.stop_pressed()
+                    pos_hint: {'center_y': 0.5}
+                    font_size: dp(30)
 <ActivityWindow>:
     canvas.before:
         Color:
@@ -86,11 +136,13 @@ WindowManager:
                 orientation: 'horizontal'
                 MDLabel:
                     text: "Date:"
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.4, None
                     height: dp(50)
                     font_size: dp(30)
                 MDLabel:
                     text: app.activity_date
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.6, None
                     height: dp(50)
                     font_size: dp(30)
@@ -98,11 +150,13 @@ WindowManager:
                 orientation: 'horizontal'
                 MDLabel:
                     text: "Start time:"
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.4, None
                     height: dp(50)
                     font_size: dp(30)
                 MDLabel:
                     text: app.activity_start_time
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.6, None
                     height: dp(50)
                     font_size: dp(30)
@@ -110,35 +164,42 @@ WindowManager:
                 orientation: 'horizontal'
                 MDLabel:
                     text: "Duration:"
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.4, None
                     height: dp(50)
                     font_size: dp(30)
                 MDLabel:
                     text: app.activity_duration
                     size_hint: 0.6, None
+                    pos_hint: {'center_y': 0.5}
                     height: dp(50)
                     font_size: dp(30)
             MDBoxLayout:
                 orientation: 'horizontal'
                 MDLabel:
                     text: "Distance:"
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.4, None
                     height: dp(50)
                     font_size: dp(30)
                 MDLabel:
                     text: app.activity_distance
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.6, None
                     height: dp(50)
                     font_size: dp(30)
             MDBoxLayout:
                 orientation: 'horizontal'
                 MDLabel:
+                    id: activity_speed
+                    pos_hint: {'center_y': 0.5}
                     text: "Avg Speed:"
                     size_hint: 0.4, None
                     height: dp(50)
                     font_size: dp(30)
                 MDLabel:
                     text: app.activity_speed
+                    pos_hint: {'center_y': 0.5}
                     size_hint: 0.6, None
                     height: dp(50)
                     font_size: dp(30)
@@ -148,7 +209,6 @@ WindowManager:
         on_press: app.go_back_home()
         pos: (root.width - 70, 15)
         radius: dp(100)
-
 
 <Run_activity>:
     md_bg_color: app.theme_cls.primary_light
