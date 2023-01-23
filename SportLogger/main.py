@@ -13,13 +13,12 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.graphics.vertex_instructions import Line, Ellipse
 from kivymd.uix.dialog import MDDialog
 from kivy.graphics import Color
+from kivy.storage.jsonstore import JsonStore
 from gps_emulator import gps_emulator
 from plyer import gps
 import numpy as np
 from functions import *
 
-# Temporary lib import
-from temp import *
 
 # Set to True to just test the GUI (not the GPS functionality)
 DEBUG = True
@@ -110,9 +109,9 @@ class MainApp(MDApp):
         'Ride': 'bike'
     }
 
-    def __init__(self, activities, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.activities = activities
+        self.activities = JsonStore("activities.json")._data
         self.gps_location = {}
         self.canvas_points_x = np.array([])
         self.canvas_points_y = np.array([])
@@ -320,8 +319,9 @@ class MainApp(MDApp):
         self.about_dialog.open()
 
     # Function executed when activity is pressed on the homepage (data is fetched via the activity_id)
-    def activity_pressed(self, activity_id):
+    def activity_pressed(self, activity_id_float):
         self.root.current = self.root.screens[2].name
+        activity_id = str(int(activity_id_float))  # Don't understand why the activity id is a float
         if self.activities[activity_id]['type'] == "run":
             self.activity_type = "Run"
             self.root.screens[2].ids['activity_speed'].text = 'Pace:'
@@ -370,7 +370,7 @@ class MainApp(MDApp):
 # MAIN
 if __name__ == "__main__":
     try:
-        app = MainApp(activities=activities)
+        app = MainApp()
         app.run()
     except:
         pass
