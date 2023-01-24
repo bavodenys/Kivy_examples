@@ -1,4 +1,5 @@
 import polyline
+from math import radians, cos, sin, asin, sqrt
 
 # Function to determine
 # - lat/lon of center point of activity
@@ -31,3 +32,19 @@ def convert_duration(duration_s):
     else:
         duration_str = f"{remain_s:02} s"
     return duration_str
+
+# Haversine to calculate distance between lat1/lon1 and lat2/lon2
+def determine_distance(lat1, lon1, lat2, lon2):
+    # convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    r = 6371*1000 # Radius of earth in meter
+    return c * r
+
+# To convert the distance in m to a string
+def convert_distance(distance_m):
+    return f"{int(distance_m)} m"

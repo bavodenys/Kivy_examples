@@ -17,6 +17,7 @@ from kivy.storage.jsonstore import JsonStore
 from gps_emulator import gps_emulator
 from plyer import gps
 from datetime import datetime
+from copy import deepcopy
 import numpy as np
 from functions import *
 
@@ -119,7 +120,8 @@ class MainApp(MDApp):
         self.trajectory_line = []
         self.record_active = False
         self.record_paused = False
-        self.record_duration_unit = 0
+        self.record_duration_s = 0
+        self.record_distance_m = 0
 
 
     def request_android_permissions(self):
@@ -217,15 +219,18 @@ class MainApp(MDApp):
         if DEBUG:
             self.debug_counter = 0
             gps_data = self.gps_emulator.get_gps_data(self.debug_counter)
-            lat = gps_data.latitude
-            lon = gps_data.longitude
+            self.lat = gps_data.latitude
+            self.lon = gps_data.longitude
         else:
             gps.start(self.log_period*1000, 0)
             # Should I add a wait of 1 second
-            lat = self.gps_location['lat']
-            lon = self.gps_location['lon']
+            self.lat = self.gps_location['lat']
+            self.lon = self.gps_location['lon']
+        # Copy the position to determine the distance
+        self.lat_prev = deepcopy(self.lat)
+        self.lon_prev = deepcopy(self.lon)
         # Center the map on the init GPS position
-        self.root.screens[1].ids['log_map'].center_on(lat, lon)
+        self.root.screens[1].ids['log_map'].center_on(self.lat, self.lon)
 
     @mainthread
     def on_location(self, **kwargs):
@@ -240,25 +245,33 @@ class MainApp(MDApp):
         if DEBUG:
             self.debug_counter+=int(dt)
             gps_data = self.gps_emulator.get_gps_data(self.debug_counter)
-            lat = gps_data.latitude
-            lon = gps_data.longitude
+            self.lat = gps_data.latitude
+            self.lon = gps_data.longitude
         else:
-            lat = self.gps_location['lat']
-            lon = self.gps_location['lon']
+            self.lat = self.gps_location['lat']
+            self.lon = self.gps_location['lon']
 
+        # Activity duration
         if self.record_active and not(self.record_paused):
-            self.record_duration_unit += dt
-            self.record_duration = convert_duration(self.record_duration_unit)
+            self.record_duration_s += dt
+            self.record_duration = convert_duration(self.record_duration_s)
+
+        # Calculate the distance
+        if self.record_active and not(self.record_paused):
+            self.record_distance_m += determine_distance(self.lat, self.lon, self.lat_prev, self.lon_prev)
+            self.record_distance = convert_distance(self.record_distance_m)
+            self.lat_prev = deepcopy(self.lat)
+            self.lon_prev = deepcopy(self.lon)
 
         if ENABLE_TRAJECTORY:
             # Get the x, y position of the new marker position
-            x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=lat, lon=lon, zoom=16)
+            x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=self.lat, lon=self.lon, zoom=16)
             # Determine how much the map will move in x and y direction
             move_x = self.root.screens[1].ids['log_map'].center_x - x
             move_y = self.root.screens[1].ids['log_map'].center_y - y
 
         # Center the map on the marker position
-        self.root.screens[1].ids['log_map'].center_on(lat, lon)
+        self.root.screens[1].ids['log_map'].center_on(self.lat, self.lon)
 
         if ENABLE_TRAJECTORY:
             # Modify all points because the map moved
