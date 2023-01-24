@@ -16,6 +16,7 @@ from kivy.graphics import Color
 from kivy.storage.jsonstore import JsonStore
 from gps_emulator import gps_emulator
 from plyer import gps
+from datetime import datetime
 import numpy as np
 from functions import *
 
@@ -118,6 +119,7 @@ class MainApp(MDApp):
         self.trajectory_line = []
         self.record_active = False
         self.record_paused = False
+        self.record_duration_unit = 0
 
 
     def request_android_permissions(self):
@@ -244,6 +246,10 @@ class MainApp(MDApp):
             lat = self.gps_location['lat']
             lon = self.gps_location['lon']
 
+        if self.record_active and not(self.record_paused):
+            self.record_duration_unit += dt
+            self.record_duration = convert_duration(self.record_duration_unit)
+
         if ENABLE_TRAJECTORY:
             # Get the x, y position of the new marker position
             x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=lat, lon=lon, zoom=16)
@@ -293,6 +299,10 @@ class MainApp(MDApp):
 
     # Record start button pressed
     def start_pressed(self):
+        if not(self.record_active):
+            self.record_start_activity = datetime.now()
+
+        # Start/Pause handling
         if self.root.screens[1].ids['record_start'].text == "Start":
             self.root.screens[1].ids['record_start'].text = 'Pause'
             self.record_paused = False
@@ -308,7 +318,6 @@ class MainApp(MDApp):
             self.root.current = self.root.screens[2].name
         else:
             self.root.current = self.root.screens[0].name
-
 
     # About
     def call_about(self):
