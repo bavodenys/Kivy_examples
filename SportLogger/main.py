@@ -35,6 +35,7 @@ MINOR_VERSION = 1
 RUN_LOG_PERIOD = 1
 BIKE_LOG_PERIOD = 1
 MARKER_RADIUS = 15
+SPEED_RC_FILTER = 0.2
 
 # Calibrations window
 if DEBUG:
@@ -70,8 +71,12 @@ class ActivityWindow(Screen):
             color = Color(1, 0, 0)
             # For loop over all points in the lat/lon list
             for i in range(len(MDApp.lat_lon_list)-1):
-                x1, y1 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i][0], lon=MDApp.lat_lon_list[i][1], zoom=MDApp.activity_zoom)
-                x2, y2 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i+1][0], lon=MDApp.lat_lon_list[i+1][1], zoom=MDApp.activity_zoom)
+                x1, y1 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i][0],
+                                                                                 lon=MDApp.lat_lon_list[i][1],
+                                                                                 zoom=MDApp.activity_zoom)
+                x2, y2 = MDApp.root.screens[2].ids['act_map'].get_window_xy_from(lat=MDApp.lat_lon_list[i+1][0],
+                                                                                 lon=MDApp.lat_lon_list[i+1][1],
+                                                                                 zoom=MDApp.activity_zoom)
                 line = Line(points=(x1,y1,x2,y2), width=3)
                 MDApp.activity_line.append(line)
 
@@ -122,6 +127,7 @@ class MainApp(MDApp):
         self.record_paused = False
         self.record_duration_s = 0
         self.record_distance_m = 0
+        self.record_speed_m_s = 0
 
 
     def request_android_permissions(self):
@@ -181,16 +187,16 @@ class MainApp(MDApp):
             if self.activities[activity_id]['type'] == "ride":
                 activity_entry = Ride_activity(date=f"Date: {self.activities[activity_id]['date']}", \
                                          start_time=f"Start time: {self.activities[activity_id]['start_time']}", \
-                                         distance=f"Distance: {self.activities[activity_id]['distance']}", \
-                                         duration=f"Duration: {self.activities[activity_id]['duration']}", \
-                                         avg_spd=f"Avg speed: {self.activities[activity_id]['avg_spd']}", \
+                                         distance=f"Distance: {convert_m_to_km(self.activities[activity_id]['distance'])}", \
+                                         duration=f"Duration: {convert_duration(self.activities[activity_id]['duration'])}", \
+                                         avg_spd=f"Avg speed: {convert_speed_ride(self.activities[activity_id]['avg_spd'])}", \
                                          id=activity_id)
             if self.activities[activity_id]['type'] == "run":
                 activity_entry = Run_activity(date=f"Date: {self.activities[activity_id]['date']}", \
                                         start_time=f"Start time: {self.activities[activity_id]['start_time']}", \
-                                        distance=f"Distance: {self.activities[activity_id]['distance']}", \
-                                        duration=f"Duration: {self.activities[activity_id]['duration']}", \
-                                        pace=f"Pace: {self.activities[activity_id]['pace']}", \
+                                        distance=f"Distance: {convert_m_to_km(self.activities[activity_id]['distance'])}", \
+                                        duration=f"Duration: {convert_duration(self.activities[activity_id]['duration'])}", \
+                                        pace=f"Pace: {convert_speed_pace_run(self.activities[activity_id]['avg_spd'])}", \
                                         id=activity_id)
             self.root.screens[0].ids['activity_overview'].add_widget(activity_entry)
             self.root.screens[0].ids['activity_overview'].add_widget(MDLabel(size_hint=(1, None), height=dp(5)))
@@ -200,7 +206,7 @@ class MainApp(MDApp):
         self.root.current = self.root.screens[1].name
         if instance.icon == 'bike':
             self.activity_type = "Ride"
-            self.root.screens[1].ids['record_speed'].text = 'Avg Speed:'
+            self.root.screens[1].ids['record_speed'].text = 'Speed:'
             Clock.schedule_interval(self.gps_log, BIKE_LOG_PERIOD)
             if DEBUG:
                 self.gps_emulator = gps_emulator(gpx_filename='Ride_1.gpx')
@@ -258,10 +264,19 @@ class MainApp(MDApp):
 
         # Calculate the distance
         if self.record_active and not(self.record_paused):
-            self.record_distance_m += determine_distance(self.lat, self.lon, self.lat_prev, self.lon_prev)
+            self.distance_covered = determine_distance(self.lat, self.lon, self.lat_prev, self.lon_prev)
+            self.record_distance_m = self.record_distance_m + self.distance_covered
             self.record_distance = convert_distance(self.record_distance_m)
             self.lat_prev = deepcopy(self.lat)
             self.lon_prev = deepcopy(self.lon)
+
+        # Calculate the speed
+        if self.record_active and not(self.record_paused):
+            self.record_speed_m_s = rc_filter_speed(self.record_speed_m_s, self.distance_covered, dt, SPEED_RC_FILTER)
+            if self.activity_type == "Run":
+                self.record_speed = f"{convert_speed_pace_run(self.record_speed_m_s)}"
+            if self.activity_type == "Ride":
+                self.record_speed = f"{convert_speed_ride(self.record_speed_m_s)}"
 
         if ENABLE_TRAJECTORY:
             # Get the x, y position of the new marker position
@@ -323,6 +338,7 @@ class MainApp(MDApp):
         else:
             self.root.screens[1].ids['record_start'].text = 'Start'
             self.record_paused = True
+            self.record_speed_m_s = 0
 
     # Record stop button is pressed
     def stop_pressed(self):
@@ -347,15 +363,15 @@ class MainApp(MDApp):
         if self.activities[activity_id]['type'] == "run":
             self.activity_type = "Run"
             self.root.screens[2].ids['activity_speed'].text = 'Pace:'
-            self.activity_speed = self.activities[activity_id]['pace']
+            self.activity_speed = convert_speed_pace_run(self.activities[activity_id]['avg_spd'])
         elif self.activities[activity_id]['type'] == "ride":
             self.activity_type = "Ride"
             self.root.screens[2].ids['activity_speed'].text = 'Avg Speed:'
-            self.activity_speed = self.activities[activity_id]['avg_spd']
+            self.activity_speed = convert_speed_ride(self.activities[activity_id]['avg_spd'])
         self.activity_date = self.activities[activity_id]['date']
         self.activity_start_time = self.activities[activity_id]['start_time']
-        self.activity_duration = self.activities[activity_id]['duration']
-        self.activity_distance = self.activities[activity_id]['distance']
+        self.activity_duration = convert_duration(self.activities[activity_id]['duration'])
+        self.activity_distance = convert_m_to_km(self.activities[activity_id]['distance'])
         self.polyline = self.activities[activity_id]['polyline']
         # Determine from the polyline the lat/lon center and the list of coordinates
         self.act_lat_center, self.act_lon_center, self.lat_lon_list, self.activity_zoom = determine_lat_lon_from_polyline(self.polyline)

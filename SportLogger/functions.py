@@ -21,16 +21,16 @@ def determine_lat_lon_from_polyline(activity_polyline):
 
 # Function to convert s to a time indication x h x min x s
 def convert_duration(duration_s):
-    hour = int(duration_s)/3600
+    hour = int(int(duration_s)/3600)
     remain_m_s = int(duration_s)%3600
     min = int(remain_m_s/60)
     remain_s = int(remain_m_s%60)
     if hour >= 1:
-        duration_str = f"{hour:02} h {min:02} min {remain_s:02} s"
+        duration_str = f"{hour:02}:{min:02}:{remain_s:02}"
     elif min >= 1:
-        duration_str = f"{min:02} min {remain_s:02} s"
+        duration_str = f"{min:02}:{remain_s:02}"
     else:
-        duration_str = f"{remain_s:02} s"
+        duration_str = f"00:{remain_s:02}"
     return duration_str
 
 # Haversine to calculate distance between lat1/lon1 and lat2/lon2
@@ -48,3 +48,19 @@ def determine_distance(lat1, lon1, lat2, lon2):
 # To convert the distance in m to a string
 def convert_distance(distance_m):
     return f"{int(distance_m)} m"
+
+# To convert the distance (m) string to km
+def convert_m_to_km(distance_m_str):
+    return f"{round(int(distance_m_str)/1000, 2)} km"
+
+# Convert m/s to min/km
+def convert_speed_pace_run(speed):
+    return f"{convert_duration(1000/float(speed))}/km"
+
+# To convert speed (m/s) to kph
+def convert_speed_ride(speed):
+    return f"{round(float(speed)*3.6,2)} kph"
+
+# RC filter speed
+def rc_filter_speed(old_speed, distance, dt, filter_cst):
+    return old_speed + filter_cst*(distance/dt-old_speed)
