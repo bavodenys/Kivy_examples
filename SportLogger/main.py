@@ -25,7 +25,7 @@ from functions import *
 # Set to True to just test the GUI (not the GPS functionality)
 DEBUG = True
 # To enable the trajectory line
-ENABLE_TRAJECTORY = True
+ENABLE_TRAJECTORY = False
 
 # Version
 MAJOR_VERSION = 0
@@ -35,7 +35,8 @@ MINOR_VERSION = 1
 RUN_LOG_PERIOD = 1
 BIKE_LOG_PERIOD = 1
 MARKER_RADIUS = 15
-SPEED_RC_FILTER = 0.2
+RUN_SPEED_RC_FILTER = 0.05
+RIDE_SPEED_RC_FILTER = 0.05
 
 # Calibrations window
 if DEBUG:
@@ -272,10 +273,13 @@ class MainApp(MDApp):
 
         # Calculate the speed
         if self.record_active and not(self.record_paused):
-            self.record_speed_m_s = rc_filter_speed(self.record_speed_m_s, self.distance_covered, dt, SPEED_RC_FILTER)
             if self.activity_type == "Run":
+                self.record_speed_m_s = rc_filter_speed(self.record_speed_m_s, self.distance_covered, dt,
+                                                        RUN_SPEED_RC_FILTER)
                 self.record_speed = f"{convert_speed_pace_run(self.record_speed_m_s)}"
             if self.activity_type == "Ride":
+                self.record_speed_m_s = rc_filter_speed(self.record_speed_m_s, self.distance_covered, dt,
+                                                        RIDE_SPEED_RC_FILTER)
                 self.record_speed = f"{convert_speed_ride(self.record_speed_m_s)}"
 
         if ENABLE_TRAJECTORY:
@@ -344,6 +348,7 @@ class MainApp(MDApp):
     def stop_pressed(self):
         if self.record_active:
             self.record_active = False
+
             self.root.current = self.root.screens[2].name
         else:
             self.root.current = self.root.screens[0].name
