@@ -37,6 +37,8 @@ BIKE_LOG_PERIOD = 1
 MARKER_RADIUS = 15
 RUN_SPEED_RC_FILTER = 0.05
 RIDE_SPEED_RC_FILTER = 0.05
+RUN_MOVING_THS_SPD = 1
+RIDE_MOVING_THS_SPD = 1
 
 # Calibrations window
 if DEBUG:
@@ -119,7 +121,8 @@ class MainApp(MDApp):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.activities = JsonStore("activities.json")._data
+        #self.activities = JsonStore("activities.json")._data
+        self.activities = JsonStore("activities.json")
         self.gps_location = {}
         self.canvas_points_x = np.array([])
         self.canvas_points_y = np.array([])
@@ -129,6 +132,7 @@ class MainApp(MDApp):
         self.record_duration_s = 0
         self.record_distance_m = 0
         self.record_speed_m_s = 0
+        self.record_type = ""
 
 
     def request_android_permissions(self):
@@ -206,7 +210,7 @@ class MainApp(MDApp):
         self.root.screens[0].ids['record_activity_menu'].close_stack()
         self.root.current = self.root.screens[1].name
         if instance.icon == 'bike':
-            self.activity_type = "Ride"
+            self.record_type = "Ride"
             self.root.screens[1].ids['record_speed'].text = 'Speed:'
             Clock.schedule_interval(self.gps_log, BIKE_LOG_PERIOD)
             if DEBUG:
@@ -215,7 +219,7 @@ class MainApp(MDApp):
                 self.log_period = BIKE_LOG_PERIOD
 
         if instance.icon == 'run':
-            self.activity_type = "Run"
+            self.record_type = "Run"
             self.root.screens[1].ids['record_speed'].text = 'Pace:'
             Clock.schedule_interval(self.gps_log, RUN_LOG_PERIOD)
             if DEBUG:
@@ -273,11 +277,11 @@ class MainApp(MDApp):
 
         # Calculate the speed
         if self.record_active and not(self.record_paused):
-            if self.activity_type == "Run":
+            if self.record_type == "Run":
                 self.record_speed_m_s = rc_filter_speed(self.record_speed_m_s, self.distance_covered, dt,
                                                         RUN_SPEED_RC_FILTER)
                 self.record_speed = f"{convert_speed_pace_run(self.record_speed_m_s)}"
-            if self.activity_type == "Ride":
+            if self.record_type == "Ride":
                 self.record_speed_m_s = rc_filter_speed(self.record_speed_m_s, self.distance_covered, dt,
                                                         RIDE_SPEED_RC_FILTER)
                 self.record_speed = f"{convert_speed_ride(self.record_speed_m_s)}"
@@ -348,6 +352,13 @@ class MainApp(MDApp):
     def stop_pressed(self):
         if self.record_active:
             self.record_active = False
+            # Save the activity in the json file
+            self.activities.put(f"{len(self.activities)+1}", type=f"{self.record_type.lower()}",
+                date=f"{self.record_start_activity.day:02}/{self.record_start_activity.month:02}/{self.record_start_activity.year}",
+                start_time=f"{self.record_start_activity.hour:02}:{self.record_start_activity.minute:02}",
+                distance=f"{int(self.record_distance_m)}", duration=f"{int(self.record_duration_s)}",
+                avg_spd="44", polyline="44")
+
 
             self.root.current = self.root.screens[2].name
         else:
