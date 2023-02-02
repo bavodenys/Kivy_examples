@@ -112,6 +112,7 @@ class MainApp(MDApp):
     record_duration = StringProperty('')
     record_distance = StringProperty('')
     record_speed = StringProperty('')
+    record_type = StringProperty('')
 
     # Floating button actions
     activities_record = {
@@ -127,12 +128,14 @@ class MainApp(MDApp):
         self.canvas_points_x = np.array([])
         self.canvas_points_y = np.array([])
         self.trajectory_line = []
+        self.record_gps_list = []
         self.record_active = False
         self.record_paused = False
         self.record_duration_s = 0
         self.record_distance_m = 0
         self.record_speed_m_s = 0
         self.record_type = ""
+        self.record_saved = False
 
 
     def request_android_permissions(self):
@@ -188,6 +191,7 @@ class MainApp(MDApp):
 
     def init_gui(self, dt):
         self.root.screens[0].ids['record_activity_menu'].icon = 'record'
+        self.root.screens[0].ids['activity_overview'].clear_widgets()  # Clear all activities from the overview
         for activity_id in self.activities:
             if self.activities[activity_id]['type'] == "ride":
                 activity_entry = Ride_activity(date=f"Date: {self.activities[activity_id]['date']}", \
@@ -262,6 +266,10 @@ class MainApp(MDApp):
             self.lat = self.gps_location['lat']
             self.lon = self.gps_location['lon']
 
+        # Record activity list of (lat, lon)
+        if self.record_active and not(self.record_paused):
+            self.record_gps_list.append((self.lat, self.lon))
+
         # Activity duration
         if self.record_active and not(self.record_paused):
             self.record_duration_s += dt
@@ -286,7 +294,7 @@ class MainApp(MDApp):
                                                         RIDE_SPEED_RC_FILTER)
                 self.record_speed = f"{convert_speed_ride(self.record_speed_m_s)}"
 
-        if ENABLE_TRAJECTORY:
+        if ENABLE_TRAJECTORY & self.record_active:
             # Get the x, y position of the new marker position
             x, y = self.root.screens[1].ids['log_map'].get_window_xy_from(lat=self.lat, lon=self.lon, zoom=16)
             # Determine how much the map will move in x and y direction
@@ -296,7 +304,7 @@ class MainApp(MDApp):
         # Center the map on the marker position
         self.root.screens[1].ids['log_map'].center_on(self.lat, self.lon)
 
-        if ENABLE_TRAJECTORY:
+        if ENABLE_TRAJECTORY & self.record_active:
             # Modify all points because the map moved
             self.canvas_points_x = self.canvas_points_x + move_x
             self.canvas_points_y = self.canvas_points_y + move_y
@@ -313,7 +321,7 @@ class MainApp(MDApp):
 
         # Update of marker and line
         with self.root.screens[1].canvas:
-            if ENABLE_TRAJECTORY:
+            if ENABLE_TRAJECTORY & self.record_active:
                 # Update of trajectory line
                 array_size = self.canvas_points_x.size
                 if array_size >= 2:
@@ -352,15 +360,16 @@ class MainApp(MDApp):
     def stop_pressed(self):
         if self.record_active:
             self.record_active = False
+            record_polyline = polyline.encode(self.record_gps_list, 5)
+            activity_id = len(self.activities)+1
             # Save the activity in the json file
-            self.activities.put(f"{len(self.activities)+1}", type=f"{self.record_type.lower()}",
+            self.activities.put(f"{activity_id}", type=f"{self.record_type.lower()}",
                 date=f"{self.record_start_activity.day:02}/{self.record_start_activity.month:02}/{self.record_start_activity.year}",
                 start_time=f"{self.record_start_activity.hour:02}:{self.record_start_activity.minute:02}",
                 distance=f"{int(self.record_distance_m)}", duration=f"{int(self.record_duration_s)}",
-                avg_spd="44", polyline="44")
-
-
-            self.root.current = self.root.screens[2].name
+                avg_spd="44", polyline=record_polyline)
+            self.record_saved = True
+            self.activity_pressed(activity_id)
         else:
             self.root.current = self.root.screens[0].name
 
@@ -414,6 +423,9 @@ class MainApp(MDApp):
     # Function to go back to the homepage with overview of all activities
     def go_back_home(self):
         self.root.current = self.root.screens[0].name
+        if self.record_saved:  # Reload the activities when an activity was recorded
+            Clock.schedule_once(self.init_gui, 1)
+            self.record_saved = False
         # Remove the activity line on the MapView
         for line in self.activity_line:
             self.root.screens[2].canvas.remove(line)
