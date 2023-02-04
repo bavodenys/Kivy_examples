@@ -23,7 +23,7 @@ from functions import *
 
 
 # Set to True to just test the GUI (not the GPS functionality)
-DEBUG = True
+DEBUG = False
 # To enable the trajectory line
 ENABLE_TRAJECTORY = False
 
