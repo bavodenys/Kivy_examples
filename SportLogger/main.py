@@ -362,12 +362,13 @@ class MainApp(MDApp):
             self.record_active = False
             record_polyline = polyline.encode(self.record_gps_list, 5)
             activity_id = len(self.activities)+1
+            avg_spd = self.record_distance_m/self.record_duration_s
             # Save the activity in the json file
             self.activities.put(f"{activity_id}", type=f"{self.record_type.lower()}",
                 date=f"{self.record_start_activity.day:02}/{self.record_start_activity.month:02}/{self.record_start_activity.year}",
                 start_time=f"{self.record_start_activity.hour:02}:{self.record_start_activity.minute:02}",
                 distance=f"{int(self.record_distance_m)}", duration=f"{int(self.record_duration_s)}",
-                avg_spd="44", polyline=record_polyline)
+                avg_spd=avg_spd, polyline=record_polyline)
             self.record_saved = True
             self.activity_pressed(activity_id)
         else:
