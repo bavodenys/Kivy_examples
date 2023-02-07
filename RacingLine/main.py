@@ -4,7 +4,7 @@ from kivy.graphics.vertex_instructions import Ellipse
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.lang import Builder
 from kivy.properties import StringProperty
-from kivy.graphics import Color
+from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 from functions import *
 from calibrations import *
@@ -29,18 +29,104 @@ class MainWindow(MDBoxLayout):
         self.key_down_active = False
         self.key_right_active = False
         self.key_left_active = False
-        self.vehicle_pos_x = MAX_POS_X/2
-        self.vehicle_pos_y = MAX_POS_Y/2
+        self.vehicle_pos_x = START_POS_X
+        self.vehicle_pos_y = START_POS_Y
         self.orientation_angle = 90
         self.vehicle_speed = 0
         self.vehicle_acceleration = 0
         self.accelerating_force = 0
         self.braking_force = 0
         self.steering_angle = 0
+        self.circuit = []
         # Create the racing track
         with self.canvas:
+            Color(1, 0, 1)
+            self.vehicle = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
             Color(1, 1, 1)
-            self.vehicle = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_RADIUS, ELLIPSE_RADIUS))
+            self.circuit.append(Rectangle(pos=(2800,300), size=(TRACK_WIDTH, 1400)))
+            self.circuit.append(Ellipse(pos=[2800-(400-TRACK_WIDTH),1700-400/2], size=(400, 400), angle_start=0, angle_end=90))
+            self.circuit.append(Rectangle(pos=(2400, 1800), size=(300,TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=(2400-600/2, 1800-(600-TRACK_WIDTH)), size=(600, 600), angle_start=315, angle_end=360))
+            self.circuit.append(Ellipse(pos=[1747, 1653], size=(600, 600), angle_start=135, angle_end=180))
+            self.circuit.append(Rectangle(pos=(1547, 1653), size=(500, TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=[1297, 1253], size=(500, 500), angle_start=180, angle_end=360))
+            self.circuit.append(Rectangle(pos=(1547, 1253), size=(300, TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=(1722, 1103), size=(250, 250), angle_start=0, angle_end=90))
+            self.circuit.append(Rectangle(pos=(1873, 1128), size=(TRACK_WIDTH, 100)))
+            self.circuit.append(Ellipse(pos=(1723, 1003), size=(250, 250), angle_start=90, angle_end=180))
+            self.circuit.append(Rectangle(pos=(1248, 1003), size=(600, TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=(848, 1003), size=(800, 800), angle_start=180, angle_end=270))
+            self.circuit.append(Rectangle(pos=(848, 1403), size=(TRACK_WIDTH, 300)))
+            self.circuit.append(Ellipse(pos=(599, 1527), size=(350, 350), angle_start=0, angle_end=90))
+            self.circuit.append(Rectangle(pos=(674, 1777), size=(100, TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=(549, 1627), size=(250, 250), angle_start=270, angle_end=360))
+            self.circuit.append(Rectangle(pos=(549, 1712), size=(TRACK_WIDTH, 40)))
+            self.circuit.append(Ellipse(pos=(249, 1512), size=(400, 400), angle_start=90, angle_end=160))
+            self.circuit.append(Ellipse(pos=(286, 1036), size=(600, 600), angle_start=270, angle_end=340))
+            self.circuit.append(Rectangle(pos=(286, 686), size=(TRACK_WIDTH, 650)))
+            self.circuit.append(Ellipse(pos=(286, 336), size=(700, 700), angle_start=235, angle_end=270))
+            self.circuit.append(Ellipse(pos=(-297, -87), size=(800, 800), angle_start=90, angle_end=55))
+            self.circuit.append(Ellipse(pos=(403, 113), size=(400, 400), angle_start=180, angle_end=270))
+            self.circuit.append(Rectangle(pos=(603, 113), size=(497, TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=(900, 113), size=(400, 400), angle_start=-20, angle_end=180))
+            self.circuit.append(Ellipse(pos=(865, 398), size=(300, 300), angle_start=160, angle_end=270))
+            Color(0, 0, 0)
+            self.circuit.append(Ellipse(pos=[2800-((400-TRACK_WIDTH*2)/2)-TRACK_WIDTH,1700-(400-TRACK_WIDTH*2)/2], size=(400-TRACK_WIDTH*2, 400-TRACK_WIDTH*2), angle_start=0, angle_end=90))
+            self.circuit.append(Ellipse(pos=(2400 - (600 / 2 - TRACK_WIDTH), 1400),size=(600 - TRACK_WIDTH * 2, 600 - TRACK_WIDTH * 2), angle_start=315,angle_end=360))
+            self.circuit.append(Ellipse(pos=[1847, 1753], size=(600 - TRACK_WIDTH * 2, 600 - TRACK_WIDTH * 2), angle_start=135,angle_end=180))
+            self.circuit.append(Ellipse(pos=[1397, 1352], size=(300, 300), angle_start=180, angle_end=360))
+            self.circuit.append(Ellipse(pos=(1822, 1203), size=(50, 50), angle_start=0, angle_end=90))
+            self.circuit.append(Ellipse(pos=(1822, 1103), size=(50, 50), angle_start=90, angle_end=180))
+            self.circuit.append(Ellipse(pos=(948, 1103), size=(600, 600), angle_start=180, angle_end=270))
+            self.circuit.append(Ellipse(pos=(699, 1627), size=(150, 150), angle_start=0, angle_end=90))
+            self.circuit.append(Ellipse(pos=(649, 1727), size=(50, 50), angle_start=270, angle_end=360))
+            self.circuit.append(Ellipse(pos=(349, 1612), size=(200, 200), angle_start=90, angle_end=160))
+            self.circuit.append(Ellipse(pos=(386, 1136), size=(400, 400), angle_start=270, angle_end=340))
+            self.circuit.append(Ellipse(pos=(386, 436), size=(500, 500), angle_start=235, angle_end=270))
+            self.circuit.append(Ellipse(pos=(-197, 13), size=(600, 600), angle_start=90, angle_end=55))
+            self.circuit.append(Ellipse(pos=(503, 213), size=(200, 200), angle_start=180, angle_end=270))
+            self.circuit.append(Ellipse(pos=(1000, 213), size=(200, 200), angle_start=-20, angle_end=180))
+            self.circuit.append(Ellipse(pos=(965, 498), size=(100, 100), angle_start=160, angle_end=270))
+            Color(0, 0, 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     def update(self, dt):
@@ -77,7 +163,9 @@ class MainWindow(MDBoxLayout):
 
 
         with self.canvas:
-            self.vehicle = Ellipse(pos=[self.vehicle_pos_x, self.vehicle_pos_y], size=(ELLIPSE_RADIUS, ELLIPSE_RADIUS))
+            Color(1, 0, 1)
+            self.vehicle = Ellipse(pos=[self.vehicle_pos_x, self.vehicle_pos_y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
+
 
         # Dashboard variables
         self.dashboard_speed = str(int(self.vehicle_speed * 3.6))
