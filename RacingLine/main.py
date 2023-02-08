@@ -43,7 +43,7 @@ class MainWindow(MDBoxLayout):
             Color(1, 0, 1)
             self.vehicle = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
             Color(1, 1, 1)
-            self.circuit.append(Rectangle(pos=(2800,300), size=(TRACK_WIDTH, 1400)))
+            self.circuit.append(Rectangle(pos=(2800,420), size=(TRACK_WIDTH, 1280)))
             self.circuit.append(Ellipse(pos=[2800-(400-TRACK_WIDTH),1700-400/2], size=(400, 400), angle_start=0, angle_end=90))
             self.circuit.append(Rectangle(pos=(2400, 1800), size=(300,TRACK_WIDTH)))
             self.circuit.append(Ellipse(pos=(2400-600/2, 1800-(600-TRACK_WIDTH)), size=(600, 600), angle_start=315, angle_end=360))
@@ -70,6 +70,15 @@ class MainWindow(MDBoxLayout):
             self.circuit.append(Rectangle(pos=(603, 113), size=(497, TRACK_WIDTH)))
             self.circuit.append(Ellipse(pos=(900, 113), size=(400, 400), angle_start=-20, angle_end=180))
             self.circuit.append(Ellipse(pos=(865, 398), size=(300, 300), angle_start=160, angle_end=270))
+            self.circuit.append(Rectangle(pos=(865, 548), size=(TRACK_WIDTH, 150)))
+            self.circuit.append(Ellipse(pos=(865, 548), size=(300, 300), angle_start=270, angle_end=360))
+            self.circuit.append(Rectangle(pos=(1015, 748), size=(1000, TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=(1715, 248), size=(600, 600), angle_start=0, angle_end=110))
+            self.circuit.append(Ellipse(pos=(2179, -57), size=(800, 800), angle_start=270, angle_end=290))
+            self.circuit.append(Rectangle(pos=(2179, 293), size=(TRACK_WIDTH, 50)))
+            self.circuit.append(Ellipse(pos=(2179, 93), size=(400, 400), angle_start=180, angle_end=270))
+            self.circuit.append(Rectangle(pos=(2379, 93), size=(171, TRACK_WIDTH)))
+            self.circuit.append(Ellipse(pos=(2200, 93), size=(700, 700), angle_start=90, angle_end=180))
             Color(0, 0, 0)
             self.circuit.append(Ellipse(pos=[2800-((400-TRACK_WIDTH*2)/2)-TRACK_WIDTH,1700-(400-TRACK_WIDTH*2)/2], size=(400-TRACK_WIDTH*2, 400-TRACK_WIDTH*2), angle_start=0, angle_end=90))
             self.circuit.append(Ellipse(pos=(2400 - (600 / 2 - TRACK_WIDTH), 1400),size=(600 - TRACK_WIDTH * 2, 600 - TRACK_WIDTH * 2), angle_start=315,angle_end=360))
@@ -87,7 +96,24 @@ class MainWindow(MDBoxLayout):
             self.circuit.append(Ellipse(pos=(503, 213), size=(200, 200), angle_start=180, angle_end=270))
             self.circuit.append(Ellipse(pos=(1000, 213), size=(200, 200), angle_start=-20, angle_end=180))
             self.circuit.append(Ellipse(pos=(965, 498), size=(100, 100), angle_start=160, angle_end=270))
+            self.circuit.append(Ellipse(pos=(965, 648), size=(100, 100), angle_start=270, angle_end=360))
+            self.circuit.append(Ellipse(pos=(1815, 348), size=(400, 400), angle_start=0, angle_end=110))
+            self.circuit.append(Ellipse(pos=(2279, 43), size=(600, 600), angle_start=270, angle_end=290))
+            self.circuit.append(Ellipse(pos=(2279, 193), size=(200, 200), angle_start=180, angle_end=270))
+            self.circuit.append(Ellipse(pos=(2300, 193), size=(500, 500), angle_start=90, angle_end=180))
             Color(0, 0, 1)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
