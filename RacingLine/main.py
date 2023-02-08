@@ -6,9 +6,9 @@ from kivy.lang import Builder
 from kivy.properties import StringProperty
 from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
+from kivy.core.image import Image
 from functions import *
 from calibrations import *
-
 
 # Version
 MAJOR_VERSION = 0
@@ -38,6 +38,7 @@ class MainWindow(MDBoxLayout):
         self.braking_force = 0
         self.steering_angle = 0
         self.circuit = []
+        self.printscreen_available = False
         # Create the racing track
         with self.canvas:
             Color(1, 0, 1)
@@ -101,64 +102,16 @@ class MainWindow(MDBoxLayout):
             self.circuit.append(Ellipse(pos=(2279, 43), size=(600, 600), angle_start=270, angle_end=290))
             self.circuit.append(Ellipse(pos=(2279, 193), size=(200, 200), angle_start=180, angle_end=270))
             self.circuit.append(Ellipse(pos=(2300, 193), size=(500, 500), angle_start=90, angle_end=180))
-            Color(0, 0, 1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
     def update(self, dt):
+
         # Remove the vehicle from the canvas
         self.canvas.remove(self.vehicle)
 
+        # Get the vehicle inputs
         self.accelerating_force = ACCELERATING_FORCE if self.key_up_active else 0
         self.braking_force = BRAKING_FORCE if self.key_down_active else 0
         if self.key_left_active and self.key_right_active:
@@ -186,12 +139,16 @@ class MainWindow(MDBoxLayout):
                                                                                             self.steering_angle,
                                                                                             self.orientation_angle,
                                                                                             dt)
+        if self.printscreen_available:
+            color = self.m.read_pixel(self.vehicle_pos_x, self.vehicle_pos_y)
+            print(f"{color[0]},{color[1]},{color[2]}")
+            if (color[0] < THS_BLACK and color[1] < THS_BLACK and color[2] < THS_BLACK):
+                print('GAME OVER!')
 
-
+        # Draw vehicle back on the canvas
         with self.canvas:
             Color(1, 0, 1)
             self.vehicle = Ellipse(pos=[self.vehicle_pos_x, self.vehicle_pos_y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
-
 
         # Dashboard variables
         self.dashboard_speed = str(int(self.vehicle_speed * 3.6))
@@ -205,6 +162,8 @@ class MainWindow(MDBoxLayout):
             self.key_left_active = True
         if keycode == 79:  # Key RIGHT
             self.key_right_active = True
+        if keycode == 19: # p -> printscreen
+            self.make_printscreen()
 
     def on_keyboard_up(self, instance, keyboard, keycode):
         if keycode == 82:  # Key UP
@@ -215,6 +174,14 @@ class MainWindow(MDBoxLayout):
             self.key_left_active = False
         if keycode == 79:  # Key RIGHT
             self.key_right_active = False
+
+
+    # Function to make printscreen
+    def make_printscreen(self):
+        im = Window.screenshot('racetrack.png')
+        self.m = Image.load(im, keep_data=True)
+        self.printscreen_available = True
+
 
 class MainApp(MDApp):
 
