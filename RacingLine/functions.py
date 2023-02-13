@@ -27,3 +27,20 @@ def calculate_position(vehicle_pos_x, vehicle_pos_y, vehicle_speed, steering_ang
 def calculate_distance(x1, x2, y1, y2):
     distance = sqrt(pow(x2-x1,2) + pow(y2-y1,2))
     return distance
+
+def determine_in_rectangle(veh_pos_x, veh_pos_y, x0, y0, width, height):
+    if  veh_pos_x > x0 and veh_pos_y > y0 and veh_pos_x < (x0+width) and veh_pos_y < (y0+height):
+        return True
+    else:
+        return False
+
+def determine_on_track(veh_pos_x, veh_pos_y, track):
+    on_track = False
+    for seg in track:
+        if determine_in_rectangle(veh_pos_x, veh_pos_y, track[seg]['TRACK_POS_X'], track[seg]['TRACK_POS_Y'], track[seg]['TRACK_SIZE_X'], track[seg]['TRACK_SIZE_Y']):
+            on_track = True
+            break
+        else:
+            pass
+    return on_track
+

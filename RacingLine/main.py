@@ -7,6 +7,7 @@ from kivy.properties import StringProperty
 from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 from kivy.core.image import Image
+from kivy.metrics import dp
 from functions import *
 from calibrations import *
 from copy import deepcopy
@@ -19,8 +20,77 @@ MINOR_VERSION = 1
 # Mode
 AUTO_MODE = True
 
+# Window dimensions
+WINDOW_WIDTH = 1848
+WINDOW_HEIGHT = 968
+
 # Set window to screen size
 Window.maximize()
+#Window.borderless = True
+
+
+class vehicle():
+
+    def __init__(self, throttle, brake, left, right, **kwargs):
+        super().__init__(**kwargs)
+        self.throttle = throttle
+        self.brake = brake
+        self.left = left
+        self.right = right
+        self.veh_pos_x = START_POS_X
+        self.veh_pos_y = START_POS_Y
+        self.dur = 0
+        self.dist = 0
+        self.acc_frc = 0
+        self.brk_frc = 0
+        self.veh_spd = 0
+        self.veh_acc = 0
+        self.or_ang = START_ORIENTATION_ANGLE
+        self.st_ang = 0
+        self.on_track = True
+        self.it_out = 0
+        self.ranking = 0
+        self.score = 0
+        self.ellipse = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER,ELLIPSE_DIAMETER))
+
+    def calculate_inputs(self, iteration):
+        self.acc_frc = ACCELERATING_FORCE if self.throttle[iteration] else 0
+        self.brk_frc = BRAKING_FORCE if self.brake[iteration] else 0
+        if self.left[iteration] and self.right[iteration]:
+            pass
+        else:
+            if self.left[iteration]:
+                if self.st_ang <= -MAX_STEERING_ANGLE:
+                    pass
+                else:
+                    self.st_ang -= ANGLE_INCREASE
+            if self.right[iteration]:
+                if self.st_ang >= MAX_STEERING_ANGLE:
+                    pass
+                else:
+                    self.st_ang += ANGLE_INCREASE
+
+    def update_acceleration(self):
+        self.veh_acc = calculate_acceleration(self.acc_frc, self.brk_frc, self.veh_spd)
+
+    def update_speed(self, dt):
+        self.veh_spd = calculate_speed(self.veh_spd, self.veh_acc, dt)
+
+    def update_position_orientation(self, dt):
+        self.veh_pos_x, self.veh_pos_y, self.or_ang, dist = calculate_position(self.veh_pos_x,
+                                                                           self.veh_pos_y,
+                                                                           self.veh_spd,
+                                                                           self.st_ang,
+                                                                           self.or_ang,
+                                                                           dt)
+        self.dist += dist
+
+    def update_veh_stats(self, dt):
+        self.dur += dt
+
+    def update_score(self):
+        self.score = self.dist/self.dur
+
 
 class MainWindow(MDBoxLayout):
     dashboard_speed = StringProperty('')
@@ -30,6 +100,7 @@ class MainWindow(MDBoxLayout):
         Window.bind(on_key_down=self.on_keyboard_down)
         Window.bind(on_key_up=self.on_keyboard_up)
         Clock.schedule_interval(self.update, 1 / 60)
+        # Manual control
         self.key_up_active = False
         self.key_down_active = False
         self.key_right_active = False
@@ -42,73 +113,25 @@ class MainWindow(MDBoxLayout):
         self.accelerating_force = 0
         self.braking_force = 0
         self.steering_angle = 0
+
+        self.first_run_simulation = True
+        self.vehicles_crashed = 0
+        self.top_10 = {}
         self.circuit = []
         self.printscreen_available = False
         self.simulation_started = False
         # Create the racing track
         with self.canvas:
-            if not(AUTO_MODE):
-                Color(1, 0, 1)
-                self.vehicle = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
-            Color(1, 1, 1)  # White
-            self.circuit.append(Rectangle(pos=(2800,420), size=(TRACK_WIDTH, 1280)))
-            self.circuit.append(Ellipse(pos=[2800-(400-TRACK_WIDTH),1700-400/2], size=(400, 400), angle_start=0, angle_end=90))
-            self.circuit.append(Rectangle(pos=(2400, 1800), size=(300,TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=(2400-600/2, 1800-(600-TRACK_WIDTH)), size=(600, 600), angle_start=315, angle_end=360))
-            self.circuit.append(Ellipse(pos=[1747, 1653], size=(600, 600), angle_start=135, angle_end=180))
-            self.circuit.append(Rectangle(pos=(1547, 1653), size=(500, TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=[1297, 1253], size=(500, 500), angle_start=180, angle_end=360))
-            self.circuit.append(Rectangle(pos=(1547, 1253), size=(300, TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=(1722, 1103), size=(250, 250), angle_start=0, angle_end=90))
-            self.circuit.append(Rectangle(pos=(1873, 1128), size=(TRACK_WIDTH, 100)))
-            self.circuit.append(Ellipse(pos=(1723, 1003), size=(250, 250), angle_start=90, angle_end=180))
-            self.circuit.append(Rectangle(pos=(1248, 1003), size=(600, TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=(848, 1003), size=(800, 800), angle_start=180, angle_end=270))
-            self.circuit.append(Rectangle(pos=(848, 1403), size=(TRACK_WIDTH, 300)))
-            self.circuit.append(Ellipse(pos=(599, 1527), size=(350, 350), angle_start=0, angle_end=90))
-            self.circuit.append(Rectangle(pos=(674, 1777), size=(100, TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=(549, 1627), size=(250, 250), angle_start=270, angle_end=360))
-            self.circuit.append(Rectangle(pos=(549, 1712), size=(TRACK_WIDTH, 40)))
-            self.circuit.append(Ellipse(pos=(249, 1512), size=(400, 400), angle_start=90, angle_end=160))
-            self.circuit.append(Ellipse(pos=(286, 1036), size=(600, 600), angle_start=270, angle_end=340))
-            self.circuit.append(Rectangle(pos=(286, 686), size=(TRACK_WIDTH, 650)))
-            self.circuit.append(Ellipse(pos=(286, 336), size=(700, 700), angle_start=235, angle_end=270))
-            self.circuit.append(Ellipse(pos=(-297, -87), size=(800, 800), angle_start=90, angle_end=55))
-            self.circuit.append(Ellipse(pos=(403, 113), size=(400, 400), angle_start=180, angle_end=270))
-            self.circuit.append(Rectangle(pos=(603, 113), size=(497, TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=(900, 113), size=(400, 400), angle_start=-20, angle_end=180))
-            self.circuit.append(Ellipse(pos=(865, 398), size=(300, 300), angle_start=160, angle_end=270))
-            self.circuit.append(Rectangle(pos=(865, 548), size=(TRACK_WIDTH, 150)))
-            self.circuit.append(Ellipse(pos=(865, 548), size=(300, 300), angle_start=270, angle_end=360))
-            self.circuit.append(Rectangle(pos=(1015, 748), size=(1000, TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=(1715, 248), size=(600, 600), angle_start=0, angle_end=110))
-            self.circuit.append(Ellipse(pos=(2179, -57), size=(800, 800), angle_start=270, angle_end=290))
-            self.circuit.append(Rectangle(pos=(2179, 293), size=(TRACK_WIDTH, 50)))
-            self.circuit.append(Ellipse(pos=(2179, 93), size=(400, 400), angle_start=180, angle_end=270))
-            self.circuit.append(Rectangle(pos=(2379, 93), size=(171, TRACK_WIDTH)))
-            self.circuit.append(Ellipse(pos=(2200, 93), size=(700, 700), angle_start=90, angle_end=180))
-            Color(0, 0, 0)  # Black
-            self.circuit.append(Ellipse(pos=[2800-((400-TRACK_WIDTH*2)/2)-TRACK_WIDTH,1700-(400-TRACK_WIDTH*2)/2], size=(400-TRACK_WIDTH*2, 400-TRACK_WIDTH*2), angle_start=0, angle_end=90))
-            self.circuit.append(Ellipse(pos=(2400 - (600 / 2 - TRACK_WIDTH), 1400),size=(600 - TRACK_WIDTH * 2, 600 - TRACK_WIDTH * 2), angle_start=315,angle_end=360))
-            self.circuit.append(Ellipse(pos=[1847, 1753], size=(600 - TRACK_WIDTH * 2, 600 - TRACK_WIDTH * 2), angle_start=135,angle_end=180))
-            self.circuit.append(Ellipse(pos=[1397, 1352], size=(300, 300), angle_start=180, angle_end=360))
-            self.circuit.append(Ellipse(pos=(1822, 1203), size=(50, 50), angle_start=0, angle_end=90))
-            self.circuit.append(Ellipse(pos=(1822, 1103), size=(50, 50), angle_start=90, angle_end=180))
-            self.circuit.append(Ellipse(pos=(948, 1103), size=(600, 600), angle_start=180, angle_end=270))
-            self.circuit.append(Ellipse(pos=(699, 1627), size=(150, 150), angle_start=0, angle_end=90))
-            self.circuit.append(Ellipse(pos=(649, 1727), size=(50, 50), angle_start=270, angle_end=360))
-            self.circuit.append(Ellipse(pos=(349, 1612), size=(200, 200), angle_start=90, angle_end=160))
-            self.circuit.append(Ellipse(pos=(386, 1136), size=(400, 400), angle_start=270, angle_end=340))
-            self.circuit.append(Ellipse(pos=(386, 436), size=(500, 500), angle_start=235, angle_end=270))
-            self.circuit.append(Ellipse(pos=(-197, 13), size=(600, 600), angle_start=90, angle_end=55))
-            self.circuit.append(Ellipse(pos=(503, 213), size=(200, 200), angle_start=180, angle_end=270))
-            self.circuit.append(Ellipse(pos=(1000, 213), size=(200, 200), angle_start=-20, angle_end=180))
-            self.circuit.append(Ellipse(pos=(965, 498), size=(100, 100), angle_start=160, angle_end=270))
-            self.circuit.append(Ellipse(pos=(965, 648), size=(100, 100), angle_start=270, angle_end=360))
-            self.circuit.append(Ellipse(pos=(1815, 348), size=(400, 400), angle_start=0, angle_end=110))
-            self.circuit.append(Ellipse(pos=(2279, 43), size=(600, 600), angle_start=270, angle_end=290))
-            self.circuit.append(Ellipse(pos=(2279, 193), size=(200, 200), angle_start=180, angle_end=270))
-            self.circuit.append(Ellipse(pos=(2300, 193), size=(500, 500), angle_start=90, angle_end=180))
+            if 1:
+                if not(AUTO_MODE):
+                    Color(1, 0, 1)
+                    self.vehicle = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
+                Color(1, 1, 0)  # White
+                Rectangle(pos=[0,0], size=(MAX_POS_X, MAX_POS_Y))
+                Color(0,0,0)
+                for seg in TRACK:
+                    self.circuit.append(Rectangle(pos=[TRACK[seg]['TRACK_POS_X'], TRACK[seg]['TRACK_POS_Y']],
+                                                  size=(TRACK[seg]['TRACK_SIZE_X'], TRACK[seg]['TRACK_SIZE_Y'])))
 
 
 
@@ -145,10 +168,7 @@ class MainWindow(MDBoxLayout):
                                                                                                 self.steering_angle,
                                                                                                 self.orientation_angle,
                                                                                                 dt)
-            if self.printscreen_available:
-                color = self.m.read_pixel(self.vehicle_pos_x+(ELLIPSE_DIAMETER/2), self.vehicle_pos_y+(ELLIPSE_DIAMETER/2))
-                if (color[0] < THS_BLACK and color[1] < THS_BLACK and color[2] < THS_BLACK):
-                    print('GAME OVER!')
+
 
             # Draw vehicle back on the canvas
             with self.canvas:
@@ -158,56 +178,60 @@ class MainWindow(MDBoxLayout):
             # Dashboard variables
             self.dashboard_speed = str(int(self.vehicle_speed * 3.6))
 
+
+
+
+
+
+        # Auto mode
         else:
-            if self.simulation_started and self.iteration < 600:
-                for vehicle in self.vehicles:
-                    if self.vehicles[vehicle]['on_track']:
-
-                        self.canvas.remove(self.vehicles[vehicle]['ellipse'])
-
-                        accelerating_force = ACCELERATING_FORCE if self.vehicles[vehicle]['throttle'][self.iteration] else 0
-                        braking_force = BRAKING_FORCE if self.vehicles[vehicle]['brake'][self.iteration] else 0
-                        if self.vehicles[vehicle]['left'][self.iteration] and self.vehicles[vehicle]['right'][self.iteration]:
-                            pass
-                        else:
-                            if self.vehicles[vehicle]['left'][self.iteration]:
-                                if self.vehicles[vehicle]['steering_angle'] <= -MAX_STEERING_ANGLE:
-                                    pass
-                                else:
-                                    self.vehicles[vehicle]['steering_angle'] -= ANGLE_INCREASE
-                            if self.vehicles[vehicle]['right'][self.iteration]:
-                                if self.vehicles[vehicle]['steering_angle'] >= MAX_STEERING_ANGLE:
-                                    pass
-                                else:
-                                    self.vehicles[vehicle]['steering_angle'] += ANGLE_INCREASE
-
+            if self.simulation_started and int(self.iteration/10) < ITERATIONS:
+                for i in range(VEHICLE_POPULATION):
+                    if self.vehicles[i].on_track:
+                        self.canvas.remove(self.vehicles[i].ellipse)
+                        # Calculate the inputs
+                        self.vehicles[i].calculate_inputs(int(self.iteration/10))
                         # Calculate vehicle acceleration
-                        self.vehicles[vehicle]['vehicle_acceleration'] = calculate_acceleration(accelerating_force, braking_force, self.vehicles[vehicle]['vehicle_speed'])
+                        self.vehicles[i].update_acceleration()
                         # Calculate vehicle speed
-                        self.vehicles[vehicle]['vehicle_speed'] = calculate_speed(self.vehicles[vehicle]['vehicle_speed'], self.vehicles[vehicle]['vehicle_acceleration'], dt)
-                        # calculate vehicle position
-                        self.vehicles[vehicle]['vehicle_pos_x'], \
-                            self.vehicles[vehicle]['vehicle_pos_y'], \
-                            self.vehicles[vehicle]['orientation_angle'] = \
-                            calculate_position(self.vehicles[vehicle]['vehicle_pos_x'],
-                                               self.vehicles[vehicle]['vehicle_pos_y'],
-                                               self.vehicles[vehicle]['vehicle_speed'],
-                                               self.vehicles[vehicle]['steering_angle'],
-                                               self.vehicles[vehicle]['orientation_angle'],
-                                               dt)
+                        self.vehicles[i].update_speed(dt)
+                        # Calculate vehicle position
+                        self.vehicles[i].update_position_orientation(dt)
+                        # Update vehicle stats
+                        self.vehicles[i].update_veh_stats(dt)
 
-                        if self.printscreen_available:
-                            color = self.m.read_pixel(self.vehicles[vehicle]['vehicle_pos_x'] + (ELLIPSE_DIAMETER / 2),
-                                                      self.vehicles[vehicle]['vehicle_pos_y'] + (ELLIPSE_DIAMETER / 2))
-                            if (color[0] < THS_BLACK and color[1] < THS_BLACK and color[2] < THS_BLACK):
-                                self.vehicles[vehicle]['on_track'] = False
-                                print('GAME OVER!')
+                        veh_on_canvas = determine_in_rectangle(self.vehicles[i].veh_pos_x, self.vehicles[i].veh_pos_y, 0, 0, MAX_POS_X, MAX_POS_Y)
+                        if veh_on_canvas:
+                            veh_on_track = determine_on_track(self.vehicles[i].veh_pos_x, self.vehicles[i].veh_pos_y,TRACK)
+                        else:
+                            pass
+                        if not(veh_on_canvas) or not(veh_on_track):
+                            self.vehicles[i].on_track = False
+                            self.vehicles[i].it_out = int(self.iteration)
+                            self.vehicles_crashed += 1
+                            self.vehicles[i].update_score()
+                            if len(self.top_10) < 10:
+                                self.top_10[self.vehicles[i].score] = i
+                            else:
+                                self.top_10.pop(min(self.top_10))
+                                self.top_10[self.vehicles[i].score] = i
+                            print(f'GAME OVER! Score: {self.vehicles[i].score} {i}')
 
                         # Draw vehicle back on the canvas
                         with self.canvas:
                             Color(0, 1, 0)
-                            self.vehicles[vehicle]['ellipse'] = Ellipse(pos=[self.vehicles[vehicle]['vehicle_pos_x'], self.vehicles[vehicle]['vehicle_pos_y']],size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
+                            self.vehicles[i].ellipse = Ellipse(pos=[self.vehicles[i].veh_pos_x, self.vehicles[i].veh_pos_y],size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
+
+
+                if self.vehicles_crashed == VEHICLE_POPULATION:
+                    self.simulation_started = False
+                    if self.first_run_simulation:
+                        self.first_run_simulation = False
+                    print(sorted(self.top_10))
+
                 self.iteration +=1
+
+
 
     def on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
         if keycode == 82:  # Key UP
@@ -221,7 +245,7 @@ class MainWindow(MDBoxLayout):
         if keycode == 19:  # p -> printscreen
             self.make_printscreen()
         if keycode == 22:  # s -> start
-            self.start_simulation()
+            self.run_simulation()
 
     def on_keyboard_up(self, instance, keyboard, keycode):
         if keycode == 82:  # Key UP
@@ -239,43 +263,58 @@ class MainWindow(MDBoxLayout):
         im = Window.screenshot('racetrack.png')
         self.m = Image.load(im, keep_data=True)
         self.printscreen_available = True
+        Window.borderless = False
 
-    def start_simulation(self):
-        self.simulation_started = True
-        self.iteration = 0
-        self.vehicles = {}
-        with self.canvas:
-            Color(0, 1, 0)
-            for i in range(VEHICLE_POPULATION):
-                throttle = []
-                brake = []
-                left = []
-                right = []
-                for j in range(600):
-                    a = random.randint(0,1)
-                    b = random.randint(0,1)
-                    throttle.append(a)
-                    brake.append(int(not(a)))
-                    left.append(b)
-                    right.append(int(not(b)))
+    def run_simulation(self):
+        if not(self.simulation_started):
+            if self.first_run_simulation:
+                self.make_printscreen()
+                self.vehicles = {}
+            else:
+                pass
 
-                self.vehicles[i] = {'throttle': deepcopy(throttle),
-                                    'brake': deepcopy(brake),
-                                    'left': deepcopy(left),
-                                    'right': deepcopy(right),
-                                    'vehicle_pos_x': START_POS_X,
-                                    'vehicle_pos_y': START_POS_Y,
-                                    'vehicle_speed': 0,
-                                    'vehicle_acceleration': 0,
-                                    'orientation_angle': 270,
-                                    'steering_angle': 0,
-                                    'on_track': True,
-                                    'ellipse':Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER,ELLIPSE_DIAMETER))}
+            with self.canvas:
+                Color(0, 1, 0)
+                for i in range(VEHICLE_POPULATION):
+                    if self.first_run_simulation:
+                        throttle = [1 for j in range(20)]
+                        brake = [0 for j in range(20)]
+                        left = [0 for j in range(20)]
+                        right = [0 for j in range(20)]
+                        for j in range(ITERATIONS-20):
+                            a = random.randint(0,1)
+                            b = random.randint(0,1)
+                            c = random.randint(0,1)
+                            throttle.append(a)
+                            brake.append(int(not(a)))
+                            if b:
+                                left.append(c)
+                                right.append(int(not(c)))
+                            else:
+                                left.append(0)
+                                right.append(0)
+                        self.vehicles[i] = vehicle(throttle=throttle, brake=brake, left=left, right=right)
+                    else:
+                        self.canvas.remove(self.vehicles[i].ellipse)
+                        self.vehicles[i].veh_pos_x = START_POS_X
+                        self.vehicles[i].veh_pos_y = START_POS_Y
+                        self.vehicles[i].dur = 0
+                        self.vehicles[i].dist = 0
+                        self.vehicles[i].acc_frc = 0
+                        self.vehicles[i].brk_frc = 0
+                        self.vehicles[i].veh_spd = 0
+                        self.vehicles[i].veh_acc = 0
+                        self.vehicles[i].or_ang = START_ORIENTATION_ANGLE
+                        self.vehicles[i].st_ang = 0
+                        self.vehicles[i].on_track = True
+                        self.vehicles[i].ranking = 0
+                        self.vehicles[i].ellipse = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
 
-
-
-
-
+            self.simulation_started = True
+            self.vehicles_crashed = 0
+            self.iteration = 0
+        else:
+            pass  # Simulation ongoing
 
 class MainApp(MDApp):
 
