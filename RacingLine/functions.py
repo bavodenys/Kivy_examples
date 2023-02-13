@@ -1,5 +1,5 @@
 from calibrations import *
-from math import sin, cos, radians
+from math import sin, cos, radians, sqrt, pow
 
 # Function to calculate the acceleration
 def calculate_acceleration(acceleration_force, braking_force, veh_spd):
@@ -18,8 +18,12 @@ def calculate_speed(vehicle_speed_old, vehicle_acceleration, delta_t):
 
 # Calculate the vehicle position
 def calculate_position(vehicle_pos_x, vehicle_pos_y, vehicle_speed, steering_angle, orientation_angle, delta_t):
-
     resulting_angle = orientation_angle - steering_angle
     vehicle_pos_y_new = vehicle_pos_y + (vehicle_speed*delta_t)*sin(radians(resulting_angle))*MAP_SCALING
     vehicle_pos_x_new = vehicle_pos_x + (vehicle_speed*delta_t)*cos(radians(resulting_angle))*MAP_SCALING
-    return vehicle_pos_x_new, vehicle_pos_y_new, resulting_angle
+    distance = calculate_distance(vehicle_pos_x, vehicle_pos_x_new, vehicle_pos_y, vehicle_pos_y_new)
+    return vehicle_pos_x_new, vehicle_pos_y_new, resulting_angle, distance
+
+def calculate_distance(x1, x2, y1, y2):
+    distance = sqrt(pow(x2-x1,2) + pow(y2-y1,2))
+    return distance

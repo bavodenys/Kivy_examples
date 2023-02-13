@@ -4,6 +4,11 @@
         orientation: 'vertical'
         size_hint: 0.9, 1
         id: racing_track
+        canvas:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'racetrack0001.png'
     MDBoxLayout:
         orientation: 'vertical'
         size_hint: 0.1, 1
