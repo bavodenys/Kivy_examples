@@ -28,11 +28,32 @@ def calculate_distance(x1, x2, y1, y2):
     distance = sqrt(pow(x2-x1,2) + pow(y2-y1,2))
     return distance
 
-def determine_in_rectangle(veh_pos_x, veh_pos_y, x0, y0, width, height):
-    if  veh_pos_x > x0 and veh_pos_y > y0 and veh_pos_x < (x0+width) and veh_pos_y < (y0+height):
-        return True
-    else:
-        return False
+def determine_in_rectangle(veh_pos_x, veh_pos_y, or_ang, x0, y0, width, height):
+    x_pos = {}
+    y_pos = {}
+    result = True
+    x_pos['front_left_x'] = veh_pos_x - (VEHICLE_WIDTH/2)*cos(or_ang-START_ORIENTATION_ANGLE)-(VEHICLE_LENGTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+    x_pos['front_right_x'] = veh_pos_x + (VEHICLE_WIDTH/2)*cos(or_ang-START_ORIENTATION_ANGLE)-(VEHICLE_LENGTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+    x_pos['rear_left_x'] = veh_pos_x - (VEHICLE_WIDTH/2)*cos(or_ang-START_ORIENTATION_ANGLE)+(VEHICLE_LENGTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+    x_pos['rear_right_x'] = veh_pos_x + (VEHICLE_WIDTH/2)*cos(or_ang-START_ORIENTATION_ANGLE)+(VEHICLE_LENGTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+    y_pos['front_left_y'] = veh_pos_y + (VEHICLE_LENGTH/2)*cos(or_ang-START_ORIENTATION_ANGLE) - (VEHICLE_WIDTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+    y_pos['front_right_y'] = veh_pos_y + (VEHICLE_LENGTH/2)*cos(or_ang-START_ORIENTATION_ANGLE) + (VEHICLE_WIDTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+    y_pos['rear_left_y'] = veh_pos_y - (VEHICLE_LENGTH/2)*cos(or_ang-START_ORIENTATION_ANGLE) - (VEHICLE_WIDTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+    y_pos['rear_right_y'] = veh_pos_y - (VEHICLE_LENGTH/2)*cos(or_ang-START_ORIENTATION_ANGLE) + (VEHICLE_WIDTH/2)*sin(or_ang-START_ORIENTATION_ANGLE)
+
+    for x in x_pos:
+        if x_pos[x]<x0 or x_pos[x]>x0+width:
+            result = False
+            break
+    if result:
+        for y in y_pos:
+            if y_pos[y]<y0 or y_pos[y]>y0+height:
+                result = False
+                break
+    return result
+
+
+
 
 def determine_on_track(veh_pos_x, veh_pos_y, track):
     on_track = False

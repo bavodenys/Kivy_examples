@@ -4,30 +4,21 @@ from kivy.graphics.vertex_instructions import Ellipse
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.lang import Builder
 from kivy.properties import StringProperty
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, Rotate
 from kivy.clock import Clock
 from kivy.core.image import Image
-from kivy.metrics import dp
 from functions import *
 from calibrations import *
-from copy import deepcopy
 import random
 
 # Version
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
 
-# Mode
-AUTO_MODE = True
-
-# Window dimensions
-WINDOW_WIDTH = 1848
-WINDOW_HEIGHT = 968
+DEBUG_MODE = True
 
 # Set window to screen size
 Window.maximize()
-#Window.borderless = True
-
 
 class vehicle():
 
@@ -51,7 +42,11 @@ class vehicle():
         self.it_out = 0
         self.ranking = 0
         self.score = 0
-        self.ellipse = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER,ELLIPSE_DIAMETER))
+        Color(0, 1, 0)
+        self.rotate = Rotate(origin=[START_POS_X,START_POS_Y],
+                             angle=self.or_ang-START_ORIENTATION_ANGLE)
+        self.rectangle = Rectangle(pos=[START_POS_X-(VEHICLE_WIDTH/2), START_POS_Y-(VEHICLE_LENGTH/2)],
+                                   size=(VEHICLE_WIDTH,VEHICLE_LENGTH))
 
     def calculate_inputs(self, iteration):
         self.acc_frc = ACCELERATING_FORCE if self.throttle[iteration] else 0
@@ -105,92 +100,54 @@ class MainWindow(MDBoxLayout):
         self.key_down_active = False
         self.key_right_active = False
         self.key_left_active = False
-        self.vehicle_pos_x = START_POS_X
-        self.vehicle_pos_y = START_POS_Y
-        self.orientation_angle = 90
-        self.vehicle_speed = 0
-        self.vehicle_acceleration = 0
-        self.accelerating_force = 0
-        self.braking_force = 0
-        self.steering_angle = 0
-
+        if DEBUG_MODE:
+            self.veh_pos_x = START_POS_X
+            self.veh_pos_y = START_POS_Y
+            self.or_ang = START_ORIENTATION_ANGLE
+            self.dur = 0
+            self.dist = 0
+            self.acc_frc = 0
+            self.brk_frc = 0
+            self.veh_spd = 0
+            self.veh_acc = 0
+            self.or_ang = START_ORIENTATION_ANGLE
+            self.st_ang = 0
+            self.on_track = True
+        # Auto control
         self.first_run_simulation = True
         self.vehicles_crashed = 0
         self.top_10 = {}
         self.circuit = []
-        self.printscreen_available = False
         self.simulation_started = False
         # Create the racing track
         with self.canvas:
-            if 1:
-                if not(AUTO_MODE):
-                    Color(1, 0, 1)
-                    self.vehicle = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
-                Color(1, 1, 0)  # White
-                Rectangle(pos=[0,0], size=(MAX_POS_X, MAX_POS_Y))
-                Color(0,0,0)
-                for seg in TRACK:
-                    self.circuit.append(Rectangle(pos=[TRACK[seg]['TRACK_POS_X'], TRACK[seg]['TRACK_POS_Y']],
-                                                  size=(TRACK[seg]['TRACK_SIZE_X'], TRACK[seg]['TRACK_SIZE_Y'])))
-
-
+            Color(1, 1, 0)  #Yellow
+            Rectangle(pos=[0,0], size=(MAX_POS_X, MAX_POS_Y))
+            Color(0,0,0)  # Black
+            for seg in TRACK:
+                self.circuit.append(Rectangle(pos=[TRACK[seg]['TRACK_POS_X'], TRACK[seg]['TRACK_POS_Y']],
+                                              size=(TRACK[seg]['TRACK_SIZE_X'], TRACK[seg]['TRACK_SIZE_Y'])))
+            if DEBUG_MODE:
+                Color(0, 1, 0)
+                self.rotate = Rotate(origin=[START_POS_X, START_POS_Y],
+                                     angle=self.or_ang - START_ORIENTATION_ANGLE)
+                self.rectangle = Rectangle(pos=[START_POS_X - (VEHICLE_WIDTH / 2), START_POS_Y - (VEHICLE_LENGTH / 2)],
+                                           size=(VEHICLE_WIDTH, VEHICLE_LENGTH))
 
     def update(self, dt):
-
-        if not(AUTO_MODE):
-            # Remove the vehicle from the canvas
-            self.canvas.remove(self.vehicle)
-            # Get the vehicle inputs
-            self.accelerating_force = ACCELERATING_FORCE if self.key_up_active else 0
-            self.braking_force = BRAKING_FORCE if self.key_down_active else 0
-            if self.key_left_active and self.key_right_active:
-                pass
-            else:
-                if self.key_left_active:
-                    if self.steering_angle <= -MAX_STEERING_ANGLE:
-                        pass
-                    else:
-                        self.steering_angle -= ANGLE_INCREASE
-                if self.key_right_active:
-                    if self.steering_angle >= MAX_STEERING_ANGLE:
-                        pass
-                    else:
-                        self.steering_angle += ANGLE_INCREASE
-
-            # Calculate vehicle acceleration
-            self.vehicle_acceleration = calculate_acceleration(self.accelerating_force, self.braking_force, self.vehicle_speed)
-            # Calculate vehicle speed
-            self.vehicle_speed = calculate_speed(self.vehicle_speed, self.vehicle_acceleration, dt)
-            # calculate vehicle position
-            self.vehicle_pos_x, self.vehicle_pos_y, self.orientation_angle = calculate_position(self.vehicle_pos_x,
-                                                                                                self.vehicle_pos_y,
-                                                                                                self.vehicle_speed,
-                                                                                                self.steering_angle,
-                                                                                                self.orientation_angle,
-                                                                                                dt)
-
-
-            # Draw vehicle back on the canvas
-            with self.canvas:
-                Color(1, 0, 1)
-                self.vehicle = Ellipse(pos=[self.vehicle_pos_x, self.vehicle_pos_y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
-
-            # Dashboard variables
-            self.dashboard_speed = str(int(self.vehicle_speed * 3.6))
+        if DEBUG_MODE:
+            if self.on_track:
+                self.canvas.remove(self.rectangle)  # Remove vehicle from canvas
 
 
 
-
-
-
-        # Auto mode
         else:
-            if self.simulation_started and int(self.iteration/10) < ITERATIONS:
+            if self.simulation_started and int(self.iteration) < ITERATIONS:
                 for i in range(VEHICLE_POPULATION):
                     if self.vehicles[i].on_track:
-                        self.canvas.remove(self.vehicles[i].ellipse)
+                        self.canvas.remove(self.vehicles[i].rectangle)
                         # Calculate the inputs
-                        self.vehicles[i].calculate_inputs(int(self.iteration/10))
+                        self.vehicles[i].calculate_inputs(int(self.iteration))
                         # Calculate vehicle acceleration
                         self.vehicles[i].update_acceleration()
                         # Calculate vehicle speed
@@ -200,11 +157,17 @@ class MainWindow(MDBoxLayout):
                         # Update vehicle stats
                         self.vehicles[i].update_veh_stats(dt)
 
-                        veh_on_canvas = determine_in_rectangle(self.vehicles[i].veh_pos_x, self.vehicles[i].veh_pos_y, 0, 0, MAX_POS_X, MAX_POS_Y)
-                        if veh_on_canvas:
-                            veh_on_track = determine_on_track(self.vehicles[i].veh_pos_x, self.vehicles[i].veh_pos_y,TRACK)
+                        veh_on_canvas = determine_in_rectangle(self.vehicles[i].veh_pos_x,
+                                                               self.vehicles[i].veh_pos_y,
+                                                               self.vehicles[i].or_ang,
+                                                               0, 0, MAX_POS_X, MAX_POS_Y)
+                        if veh_on_canvas and False:
+                            veh_on_track = determine_on_track(self.vehicles[i].veh_pos_x,
+                                                              self.vehicles[i].veh_pos_y,
+                                                              self.vehicles[i].or_ang,
+                                                              TRACK)
                         else:
-                            pass
+                            veh_on_track = True
                         if not(veh_on_canvas) or not(veh_on_track):
                             self.vehicles[i].on_track = False
                             self.vehicles[i].it_out = int(self.iteration)
@@ -220,7 +183,12 @@ class MainWindow(MDBoxLayout):
                         # Draw vehicle back on the canvas
                         with self.canvas:
                             Color(0, 1, 0)
-                            self.vehicles[i].ellipse = Ellipse(pos=[self.vehicles[i].veh_pos_x, self.vehicles[i].veh_pos_y],size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
+                            self.vehicles[i].rotate.origin = [self.vehicles[i].veh_pos_x, self.vehicles[i].veh_pos_y]
+                            self.vehicles[i].rotate.angle = self.vehicles[i].or_ang - START_ORIENTATION_ANGLE
+                            # self.vehicles[i].or_ang-START_ORIENTATION_ANGLE
+                            self.vehicles[i].rectangle=Rectangle(pos=[self.vehicles[i].veh_pos_x-(VEHICLE_WIDTH/2),
+                                                                      self.vehicles[i].veh_pos_y-(VEHICLE_LENGTH/2)],
+                                                                 size=(VEHICLE_WIDTH, VEHICLE_LENGTH))
 
 
                 if self.vehicles_crashed == VEHICLE_POPULATION:
@@ -258,17 +226,9 @@ class MainWindow(MDBoxLayout):
             self.key_right_active = False
 
 
-    # Function to make printscreen
-    def make_printscreen(self):
-        im = Window.screenshot('racetrack.png')
-        self.m = Image.load(im, keep_data=True)
-        self.printscreen_available = True
-        Window.borderless = False
-
     def run_simulation(self):
         if not(self.simulation_started):
             if self.first_run_simulation:
-                self.make_printscreen()
                 self.vehicles = {}
             else:
                 pass
@@ -277,11 +237,11 @@ class MainWindow(MDBoxLayout):
                 Color(0, 1, 0)
                 for i in range(VEHICLE_POPULATION):
                     if self.first_run_simulation:
-                        throttle = [1 for j in range(20)]
-                        brake = [0 for j in range(20)]
-                        left = [0 for j in range(20)]
-                        right = [0 for j in range(20)]
-                        for j in range(ITERATIONS-20):
+                        throttle = [1 for j in range(600)]
+                        brake = [0 for j in range(600)]
+                        left = [0 for j in range(600)]
+                        right = [0 for j in range(600)]
+                        for j in range(ITERATIONS-600):
                             a = random.randint(0,1)
                             b = random.randint(0,1)
                             c = random.randint(0,1)
@@ -295,7 +255,7 @@ class MainWindow(MDBoxLayout):
                                 right.append(0)
                         self.vehicles[i] = vehicle(throttle=throttle, brake=brake, left=left, right=right)
                     else:
-                        self.canvas.remove(self.vehicles[i].ellipse)
+                        self.canvas.remove(self.vehicles[i].rectangle)
                         self.vehicles[i].veh_pos_x = START_POS_X
                         self.vehicles[i].veh_pos_y = START_POS_Y
                         self.vehicles[i].dur = 0
@@ -308,7 +268,9 @@ class MainWindow(MDBoxLayout):
                         self.vehicles[i].st_ang = 0
                         self.vehicles[i].on_track = True
                         self.vehicles[i].ranking = 0
-                        self.vehicles[i].ellipse = Ellipse(pos=[START_POS_X, START_POS_Y], size=(ELLIPSE_DIAMETER, ELLIPSE_DIAMETER))
+                        self.vehicles[i].rectangle = Rectangle(pos=[self.vehicles[i].veh_pos_x-(VEHICLE_WIDTH/2),
+                                                                  self.vehicles[i].veh_pos_y-(VEHICLE_LENGTH/2)],
+                                                             size=(VEHICLE_WIDTH, VEHICLE_LENGTH))
 
             self.simulation_started = True
             self.vehicles_crashed = 0
