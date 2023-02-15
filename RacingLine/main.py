@@ -88,7 +88,8 @@ class vehicle():
 
 
 class MainWindow(MDBoxLayout):
-    dashboard_speed = StringProperty('')
+    dashboard_st_ang = StringProperty('')
+    dashboard_veh_spd = StringProperty('')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -137,9 +138,56 @@ class MainWindow(MDBoxLayout):
     def update(self, dt):
         if DEBUG_MODE:
             if self.on_track:
-                self.canvas.remove(self.rectangle)  # Remove vehicle from canvas
+                # Remove vehicle from canvas
+                self.canvas.remove(self.rectangle)
+                # Calculate the inputs
+                self.acc_frc = ACCELERATING_FORCE if self.key_up_active else 0
+                self.brk_frc = BRAKING_FORCE if self.key_down_active else 0
+                if self.key_left_active and self.key_right_active:
+                    pass
+                else:
+                    if self.key_left_active:
+                        if self.st_ang <= -MAX_STEERING_ANGLE:
+                            pass
+                        else:
+                            self.st_ang -= ANGLE_INCREASE
+                    if self.key_right_active:
+                        if self.st_ang >= MAX_STEERING_ANGLE:
+                            pass
+                        else:
+                            self.st_ang += ANGLE_INCREASE
+                # Calculate vehicle acceleration
+                self.veh_acc = calculate_acceleration(self.acc_frc, self.brk_frc, self.veh_spd)
+                # Calculate vehicle speed
+                self.veh_spd = calculate_speed(self.veh_spd, self.veh_acc, dt)
+                # Calculate vehicle position
+                self.veh_pos_x, self.veh_pos_y, self.or_ang, self.dist = calculate_position(self.veh_pos_x,
+                                                                                            self.veh_pos_y,
+                                                                                            self.veh_spd,
+                                                                                            self.st_ang,
+                                                                                            self.or_ang, dt)
+                # Determine if the vehicle is on the canvas
+                veh_on_canvas = determine_in_rectangle(self.veh_pos_x,
+                                                       self.veh_pos_y,
+                                                       self.or_ang,
+                                                       0, 0, MAX_POS_X, MAX_POS_Y)
 
+                if not(veh_on_canvas):
+                    self.on_track = False
+                else:
+                    pass
 
+                with self.canvas:
+                    Color(0, 1, 0)
+                    self.rotate.origin = [self.veh_pos_x, self.veh_pos_y]
+                    self.rotate.angle = self.or_ang - START_ORIENTATION_ANGLE
+                    # self.vehicles[i].or_ang-START_ORIENTATION_ANGLE
+                    self.rectangle = Rectangle(pos=[self.veh_pos_x - (VEHICLE_WIDTH / 2),
+                                                    self.veh_pos_y - (VEHICLE_LENGTH / 2)],
+                                                size=(VEHICLE_WIDTH, VEHICLE_LENGTH))
+
+                self.dashboard_st_ang = str(self.st_ang)
+                self.dashboard_veh_spd = str(self.veh_spd*3.6)
 
         else:
             if self.simulation_started and int(self.iteration) < ITERATIONS:
