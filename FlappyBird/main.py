@@ -6,6 +6,7 @@ from kivy.metrics import dp
 from kivy.properties import StringProperty
 from kivy.graphics import Color, Rectangle, Ellipse
 from kivy.clock import Clock
+from copy import deepcopy
 from functions import *
 
 # Version
@@ -14,15 +15,17 @@ MINOR_VERSION = 1
 
 # Calibrations
 DEBUG_MODE = True
-OBSTACLE_WIDTH = 500
-OBSTACLE_WIDTH_DEC = 50
-OBSTACLE_DIST_START = 500
-OBSTACLE_DIST_DEC = 50
+OBSTACLE_WIDTH = 100
+OBSTACLE_GAP_INIT = 500
 START_POS_X = 300
 START_POS_Y = 1000
 FLAPPY_RADIUS = 50
 FLAPPY_MASS = 0.5
 UP_FORCE = 20 # N
+SCALING = 5
+LEVEL_0 = 2 # s
+OBSTACLE_START_SPEED = 20
+OBSTACLE_INC_SPEED = 5
 
 # Constants
 GRAV_ACC = 9.81
@@ -30,6 +33,27 @@ GRAV_ACC = 9.81
 # Window size
 WINDOW_WIDTH = 2500
 WINDOW_HEIGHT = 1500
+
+
+class obstacle():
+
+    def __init__(self, **kwargs):
+        self.posx = WINDOW_WIDTH - OBSTACLE_WIDTH
+        self.posy = 0
+        self.gap = kwargs.get('gap', OBSTACLE_GAP_INIT)
+        self.gap_posy = kwargs.get('gap_posy', ((WINDOW_HEIGHT/2)-self.gap/2))
+        self.width = OBSTACLE_WIDTH
+        self.obstacle = {'up': Rectangle(pos=[self.posx,self.gap_posy+self.gap], size=(self.width, WINDOW_HEIGHT-(self.gap_posy+self.gap))),
+                         'down':Rectangle(pos=[self.posx,self.posy], size=(self.width, self.gap_posy))}
+
+    def update_parameters(self, dt):
+        self.posx = self.posx - (OBSTACLE_START_SPEED + 0*OBSTACLE_INC_SPEED)
+
+    def update_obstacle(self):
+        self.obstacle = {'up': Rectangle(pos=[self.posx,self.gap_posy+self.gap], size=(self.width, WINDOW_HEIGHT-(self.gap_posy+self.gap))),
+                         'down':Rectangle(pos=[self.posx,self.posy], size=(self.width, self.gap_posy))}
+
+
 
 class flappy():
 
@@ -52,7 +76,7 @@ class flappy():
         self.spd_y = self.spd_y + self.acc_y*dt
 
     def update_position(self, dt):
-        self.pos_y = self.pos_y + self.spd_y*dt
+        self.pos_y = self.pos_y + self.spd_y*dt*SCALING
         if self.pos_y<0:
             self.pos_y = 0
 
@@ -72,23 +96,37 @@ class MainWindow(MDBoxLayout):
         Window.bind(on_key_down=self.on_keyboard_down)
         Window.bind(on_key_up=self.on_keyboard_up)
         self.key_up_active = False
-        Clock.schedule_interval(self.update, 1 / 60)
+        Clock.schedule_interval(self.update, 1 / 10)
+        self.obstacles = []
+        self.last_update = 0
+        self.time_count = 0
         with self.canvas:
             Color(1, 1, 0)  #Yellow
             Rectangle(pos=[0,0], size=(WINDOW_WIDTH, WINDOW_HEIGHT))
             self.flappy = flappy()
+            Color(0,0,1)
+            self.obstacles.append(obstacle(gap=300, gap_posy=1000))
 
     def update(self, dt):
         self.flappy.calculate_inputs(self.key_up_active)
         self.flappy.update_acceleration()
         self.flappy.update_speed(dt)
         self.flappy.update_position(dt)
+        for obstacle in self.obstacles:
+            obstacle.update_parameters(dt)
+        self.time_count +=dt
+        if self.time_count - self.last_update >= LEVEL_0:
+            self.last_update = deepcopy(self.time_count)
+
         with self.canvas:
             Color(1, 1, 0)
             Rectangle(pos=[0, 0], size=(WINDOW_WIDTH, WINDOW_HEIGHT))
             self.canvas.remove(self.flappy.ellipse)
             Color(0, 0, 0)
             self.flappy.update_flappy()
+            Color(0, 0, 1)
+            for obstacle in self.obstacles:
+                obstacle.update_obstacle()
 
 
     def on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
