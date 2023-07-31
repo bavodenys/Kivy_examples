@@ -1,12 +1,10 @@
 from kivymd.app import MDApp
 from kivy.core.window import Window
-from kivy.graphics.vertex_instructions import Ellipse
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 from kivy.graphics import Color, Rectangle, Rotate
 from kivy.clock import Clock
-from kivy.core.image import Image
 from functions import *
 from calibrations import *
 import random
@@ -15,7 +13,8 @@ import random
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
 
-DEBUG_MODE = True
+# Calibrations
+DEBUG_MODE = False
 
 # Set window to screen size
 Window.maximize()
@@ -42,6 +41,7 @@ class vehicle():
         self.it_out = 0
         self.ranking = 0
         self.score = 0
+
         Color(0, 1, 0)
         self.rotate = Rotate(origin=[START_POS_X,START_POS_Y],
                              angle=self.or_ang-START_ORIENTATION_ANGLE)
@@ -172,7 +172,9 @@ class MainWindow(MDBoxLayout):
                                                        self.or_ang,
                                                        0, 0, MAX_POS_X, MAX_POS_Y)
 
-                if not(veh_on_canvas):
+                veh_on_circuit = determine_on_track(self.veh_pos_x, self.veh_pos_y, self.or_ang, TRACK)
+
+                if not(veh_on_canvas) or not(veh_on_circuit):
                     self.on_track = False
                 else:
                     pass
@@ -248,7 +250,6 @@ class MainWindow(MDBoxLayout):
                 self.iteration +=1
 
 
-
     def on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
         if keycode == 82:  # Key UP
             self.key_up_active = True
@@ -258,8 +259,6 @@ class MainWindow(MDBoxLayout):
             self.key_left_active = True
         if keycode == 79:  # Key RIGHT
             self.key_right_active = True
-        if keycode == 19:  # p -> printscreen
-            self.make_printscreen()
         if keycode == 22:  # s -> start
             self.run_simulation()
 
@@ -285,11 +284,11 @@ class MainWindow(MDBoxLayout):
                 Color(0, 1, 0)
                 for i in range(VEHICLE_POPULATION):
                     if self.first_run_simulation:
-                        throttle = [1 for j in range(600)]
-                        brake = [0 for j in range(600)]
-                        left = [0 for j in range(600)]
-                        right = [0 for j in range(600)]
-                        for j in range(ITERATIONS-600):
+                        throttle = [1 for j in range(80)]
+                        brake = [0 for j in range(80)]
+                        left = [0 for j in range(80)]
+                        right = [0 for j in range(80)]
+                        for j in range(ITERATIONS-80):
                             a = random.randint(0,1)
                             b = random.randint(0,1)
                             c = random.randint(0,1)
