@@ -14,7 +14,7 @@ import random
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
 
-# Calibrations
+# Calibrations 
 DEBUG_MODE = True
 OBSTACLE_WIDTH = 100
 OBSTACLE_GAP_INIT = 500
