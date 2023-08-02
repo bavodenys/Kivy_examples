@@ -39,21 +39,21 @@ WINDOW_HEIGHT = 1500
 class Obstacle():
 
     def __init__(self, **kwargs):
-        self.posx = WINDOW_WIDTH - OBSTACLE_WIDTH
-        self.posy = 0
-        random_gap_posy = random.randint(100, WINDOW_HEIGHT-100)
+        self.pos_x = WINDOW_WIDTH - OBSTACLE_WIDTH
+        self.pos_y = 0
         self.gap = kwargs.get('gap', OBSTACLE_GAP_INIT)
-        self.gap_posy = kwargs.get('gap_posy', random_gap_posy)
+        random_gap_pos_y = random.randint(100, (WINDOW_HEIGHT-self.gap-100))
+        self.gap_posy = kwargs.get('gap_posy', random_gap_pos_y)
         self.width = OBSTACLE_WIDTH
-        self.obstacle = {'up': Rectangle(pos=[self.posx,self.gap_posy+self.gap], size=(self.width, WINDOW_HEIGHT-(self.gap_posy+self.gap))),
-                         'down':Rectangle(pos=[self.posx,self.posy], size=(self.width, self.gap_posy))}
+        self.obstacle = {'up': Rectangle(pos=[self.pos_x,self.gap_pos_y+self.gap], size=(self.width, WINDOW_HEIGHT-(self.gap_pos_y+self.gap))),
+                         'down':Rectangle(pos=[self.pos_x,self.pos_y], size=(self.width, self.gap_pos_y))}
 
     def update_parameters(self, dt):
-        self.posx = self.posx - (OBSTACLE_START_SPEED*(dt*10) + 0*OBSTACLE_INC_SPEED)
+        self.pos_x = self.pos_x - (OBSTACLE_START_SPEED*(dt*10) + 0*OBSTACLE_INC_SPEED)
 
     def update_obstacle(self):
-        self.obstacle = {'up': Rectangle(pos=[self.posx,self.gap_posy+self.gap], size=(self.width, WINDOW_HEIGHT-(self.gap_posy+self.gap))),
-                         'down':Rectangle(pos=[self.posx,self.posy], size=(self.width, self.gap_posy))}
+        self.obstacle = {'up': Rectangle(pos=[self.pos_x,self.gap_pos_y+self.gap], size=(self.width, WINDOW_HEIGHT-(self.gap_pos_y+self.gap))),
+                         'down':Rectangle(pos=[self.pos_x,self.pos_y], size=(self.width, self.gap_pos_y))}
 
 
 
@@ -66,7 +66,8 @@ class Flappy():
         self.pos_y = START_POS_Y
         self.acc_y = 0
         self.spd_y = 0
-        self.ellipse = Ellipse(pos=[self.pos_x, self.pos_y],size=[FLAPPY_RADIUS, FLAPPY_RADIUS])
+        self.crashed = False  # Put on true when pos_y = 0
+        self.ellipse = Ellipse(pos=[self.pos_x-FLAPPY_RADIUS, self.pos_y],size=[FLAPPY_RADIUS, FLAPPY_RADIUS])
 
     def calculate_inputs(self, up):
         self.up_force = UP_FORCE if up else 0
@@ -81,6 +82,7 @@ class Flappy():
         self.pos_y = self.pos_y + self.spd_y*dt*SCALING
         if self.pos_y<0:
             self.pos_y = 0
+            self.crashed = True
 
     def update_flappy(self):
         self.ellipse = Ellipse(pos=[self.pos_x, self.pos_y], size=[FLAPPY_RADIUS, FLAPPY_RADIUS])
@@ -110,32 +112,35 @@ class MainWindow(MDBoxLayout):
             self.obstacles.append(Obstacle(gap=400))
 
     def update(self, dt):
-        self.flappy.calculate_inputs(self.key_up_active)
-        self.flappy.update_acceleration()
-        self.flappy.update_speed(dt)
-        self.flappy.update_position(dt)
-        for obstacle in self.obstacles:
-            obstacle.update_parameters(dt)
-        self.time_count +=dt
-        if self.time_count - self.last_update >= LEVEL_0:
-            self.last_update = deepcopy(self.time_count)
-            self.obstacles.append(Obstacle(gap=400))
+        if not(self.flappy.crashed):
+            self.flappy.calculate_inputs(self.key_up_active)
+            self.flappy.update_acceleration()
+            self.flappy.update_speed(dt)
+            self.flappy.update_position(dt)
+            for obstacle in self.obstacles:
+                obstacle.update_parameters(dt)
 
-        with self.canvas:
-            Color(1, 1, 0)
-            Rectangle(pos=[0, 0], size=(WINDOW_WIDTH, WINDOW_HEIGHT))
-            self.canvas.remove(self.flappy.ellipse)
-            Color(0, 0, 0)
-            self.flappy.update_flappy()
-            Color(0, 0, 1)
-            remove_obstacle = False
-            for index, obstacle in enumerate(self.obstacles):
-                # Determine if the obstacle leaves the window
-                if obstacle.posx < (0 - obstacle.width):
-                    remove_obstacle = True
-                obstacle.update_obstacle()
-            if remove_obstacle:
-                del self.obstacles[0]
+
+            self.time_count +=dt
+            if self.time_count - self.last_update >= LEVEL_0:
+                self.last_update = deepcopy(self.time_count)
+                self.obstacles.append(Obstacle(gap=400))
+
+            with self.canvas:
+                Color(1, 1, 0)
+                Rectangle(pos=[0, 0], size=(WINDOW_WIDTH, WINDOW_HEIGHT))
+                self.canvas.remove(self.flappy.ellipse)
+                Color(0, 0, 0)
+                self.flappy.update_flappy()
+                Color(0, 0, 1)
+                remove_obstacle = False
+                for index, obstacle in enumerate(self.obstacles):
+                    # Determine if the obstacle leaves the window
+                    if obstacle.posx < (0 - obstacle.width):
+                        remove_obstacle = True
+                    obstacle.update_obstacle()
+                if remove_obstacle:
+                    del self.obstacles[0]
 
 
     def on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
