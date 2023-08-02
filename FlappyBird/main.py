@@ -43,7 +43,7 @@ class Obstacle():
         self.pos_y = 0
         self.gap = kwargs.get('gap', OBSTACLE_GAP_INIT)
         random_gap_pos_y = random.randint(100, (WINDOW_HEIGHT-self.gap-100))
-        self.gap_posy = kwargs.get('gap_posy', random_gap_pos_y)
+        self.gap_pos_y = kwargs.get('gap_posy', random_gap_pos_y)
         self.width = OBSTACLE_WIDTH
         self.obstacle = {'up': Rectangle(pos=[self.pos_x,self.gap_pos_y+self.gap], size=(self.width, WINDOW_HEIGHT-(self.gap_pos_y+self.gap))),
                          'down':Rectangle(pos=[self.pos_x,self.pos_y], size=(self.width, self.gap_pos_y))}
@@ -136,7 +136,7 @@ class MainWindow(MDBoxLayout):
                 remove_obstacle = False
                 for index, obstacle in enumerate(self.obstacles):
                     # Determine if the obstacle leaves the window
-                    if obstacle.posx < (0 - obstacle.width):
+                    if obstacle.pos_x < (0 - obstacle.width):
                         remove_obstacle = True
                     obstacle.update_obstacle()
                 if remove_obstacle:
