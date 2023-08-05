@@ -1,0 +1,69 @@
+#:import vibrator plyer.vibrator
+<PlyerWindow>:
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDRectangleFlatButton:
+                text: 'Enable accelerometer'
+                size_hint: None, 1
+                line_color: 'green' if root.accelerometer_active else 'red'
+                on_press: root.accelerometer_button()
+            MDLabel:
+                text: "Acceleration:"
+            MDLabel:
+                text: root.accelerometer_values
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDRectangleFlatButton:
+                text: 'Battery'
+                size_hint: None, 1
+                on_press: root.get_battery_stats()
+            MDLabel:
+                text: root.battery_stat
+            MDLabel:
+                text: root.battery_charging
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDRectangleFlatButton:
+                text: 'Vibrate 1s'
+                on_press: vibrator.vibrate(1)
+            MDRectangleFlatButton:
+                text: 'Vibrate 10s'
+                on_press: vibrator.vibrate(10)
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: app.gps_location
+            MDLabel:
+                text: app.gps_status
+            MDBoxLayout:
+                orientation: 'vertical'
+                MDRectangleFlatButton:
+                    text: 'Start'
+                    size_hint: None, 1
+                    on_press: app.start(1000, 0)
+                MDRectangleFlatButton:
+                    text: 'Stop'
+                    size_hint: None, 1
+                    on_press: app.stop()
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDRectangleFlatButton:
+                text: 'Gyroscope'
+                size_hint: None, 1
+                line_color: 'green' if root.gyroscope_active else 'red'
+                on_press: root.gyroscope_button()
+            MDLabel:
+                text: root.gyroscope_values
+        MDBoxLayout:
+            orientation: 'horizontal'
+            MDRectangleFlatButton:
+                text: 'Spatial \n orientation'
+                size_hint: None, 1
+                line_color: 'green' if root.spatialorientation_active else 'red'
+                on_press: root.spatialorientation_button()
+            MDLabel:
+                text: root.spatialorientation_values
+
+
