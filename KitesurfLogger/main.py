@@ -1,7 +1,7 @@
 from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
-from plyer import accelerometer, battery, gps, gyroscope, spatialorientation
+from plyer import accelerometer, battery, gps, gyroscope, spatialorientation, gravity
 from kivy.properties import StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.utils import platform
@@ -20,8 +20,9 @@ class PlyerWindow(MDBoxLayout):
     gyroscope_active = BooleanProperty(False)
     spatialorientation_values = StringProperty('')
     spatialorientation_active = BooleanProperty(False)
-    battery_stat = StringProperty('')
-    battery_charging = StringProperty('')
+    gravity_active = BooleanProperty(False)
+    gravity_values = StringProperty('')
+
 
 
     def __init__(self, **kwargs):
@@ -68,27 +69,38 @@ class PlyerWindow(MDBoxLayout):
         except NotImplementedError:
             self.spatialorientation_values = "ERROR"
 
+    def gravity_button(self):
+        try:
+            if self.gravity_active:
+                self.gravity_active = False
+                gravity.disable()
+            else:
+                self.gravity_active = True
+                gravity.enable()
+        except NotImplementedError:
+            self.gravity_values = "ERROR"
+
+
     def update(self, dt):
         if self.accelerometer_active:
             val = accelerometer.acceleration[:3]
             if not val == (None, None, None):
-                self.accelerometer_values = f"x: {round(val[0],2)}\ny: {round(val[1],2)}\nz: {round(val[2],2)}"
+                self.accelerometer_values = f"x: {(val[0])}\ny: {(val[1])}\nz: {(val[2])}"
 
         if self.gyroscope_active:
             val = gyroscope.rotation[:3]
             if not val == (None, None, None):
-                self.gyroscope_values = f"x: {round(val[0],2)}\ny: {round(val[1],2)}\nz: {round(val[2],2)}"
+                self.gyroscope_values = f"x: {(val[0])}\ny: {(val[1])}\nz: {(val[2])}"
 
         if self.spatialorientation_active:
             val = spatialorientation.orientation[:3]
             if not val == (None, None, None):
                 self.spatialorientation_values = f"Azimuth: {val[0]}\n Pitch:{val[1]}\n Roll:{val[2]}"
 
-
-
-    def get_battery_stats(self):
-        self.battery_stat = str(battery.status['percentage'])
-        self.battery_charging = str(battery.status['isCharging'])
+        if self.gravity_active:
+            val = gravity.gravity
+            if not val = (None, None, None):
+            self.gravity_values = f"x: {val[0]} \ny: {val[1]}\nz: {val[2]}"
 
 
 class MainApp(MDApp):
@@ -144,7 +156,7 @@ class MainApp(MDApp):
 
     @mainthread
     def on_location(self, **kwargs):
-        self.gps_location = '\n'.join(['{}={}'.format(k, round(v,2)) for k, v in kwargs.items()])
+        self.gps_location = '\n'.join(['{}={}'.format(k, v) for k, v in kwargs.items()])
 
     @mainthread
     def on_status(self, stype, status):
