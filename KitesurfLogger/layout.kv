@@ -1,4 +1,3 @@
-#:import vibrator plyer.vibrator
 <PlyerWindow>:
     MDBoxLayout:
         orientation: 'vertical'
@@ -16,21 +15,14 @@
         MDBoxLayout:
             orientation: 'horizontal'
             MDRectangleFlatButton:
-                text: 'Battery'
+                text: 'Enable gravity'
                 size_hint: None, 1
-                on_press: root.get_battery_stats()
+                line_color: 'green' if root.gravity_active else 'red'
+                on_press: root.gravity_button()
             MDLabel:
-                text: root.battery_stat
+                text: "Gravity:"
             MDLabel:
-                text: root.battery_charging
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDRectangleFlatButton:
-                text: 'Vibrate 1s'
-                on_press: vibrator.vibrate(1)
-            MDRectangleFlatButton:
-                text: 'Vibrate 10s'
-                on_press: vibrator.vibrate(10)
+                text: root.gravity_values
         MDBoxLayout:
             orientation: 'horizontal'
             MDLabel:
@@ -56,14 +48,3 @@
                 on_press: root.gyroscope_button()
             MDLabel:
                 text: root.gyroscope_values
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDRectangleFlatButton:
-                text: 'Spatial \n orientation'
-                size_hint: None, 1
-                line_color: 'green' if root.spatialorientation_active else 'red'
-                on_press: root.spatialorientation_button()
-            MDLabel:
-                text: root.spatialorientation_values
-
-

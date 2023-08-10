@@ -1,11 +1,12 @@
 from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
-from plyer import accelerometer, battery, gps, gyroscope, spatialorientation, gravity
+from plyer import accelerometer, gps, gyroscope, gravity
 from kivy.properties import StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.utils import platform
 from kivy.clock import mainthread
+from android import mActivity
 
 # Window size
 WINDOW_WIDTH = 800
@@ -18,23 +19,21 @@ class PlyerWindow(MDBoxLayout):
     accelerometer_active = BooleanProperty(False)
     gyroscope_values = StringProperty('')
     gyroscope_active = BooleanProperty(False)
-    spatialorientation_values = StringProperty('')
-    spatialorientation_active = BooleanProperty(False)
-    gravity_active = BooleanProperty(False)
     gravity_values = StringProperty('')
-
-
+    gravity_active = BooleanProperty(False)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         #Window.size = (dp(WINDOW_WIDTH), dp(WINDOW_HEIGHT))
         # Activate the accelerometer
         self.accelerometer_active = False
-        self.accelerometer_values = f"x: {0} \ny: {0}\nz: {0}"
+        self.gravity_active = False
         self.gyroscope_active = False
-        self.spatialorientation_active = False
+        self.accelerometer_values = f"x: {0} \ny: {0}\nz: {0}"
+        self.gravity_values = f"x: {0} \ny: {0}\nz: {0}"
         Clock.schedule_interval(self.update, 1 / 20)
 
+    # Accelerometer button
     def accelerometer_button(self):
         try:
             if self.accelerometer_active:
@@ -57,17 +56,6 @@ class PlyerWindow(MDBoxLayout):
                 gyroscope.enable()
         except NotImplementedError:
             self.gyroscope_values = "ERROR"
-
-    def spatialorientation(self):
-        try:
-            if self.spatialorientation_active:
-                self.spatialorientation_active = False
-                spatialorientation.disable_listener()
-            else:
-                self.spatialorientation_active = True
-                spatialorientation.enable_listener()
-        except NotImplementedError:
-            self.spatialorientation_values = "ERROR"
 
     def gravity_button(self):
         try:
@@ -92,15 +80,10 @@ class PlyerWindow(MDBoxLayout):
             if not val == (None, None, None):
                 self.gyroscope_values = f"x: {(val[0])}\ny: {(val[1])}\nz: {(val[2])}"
 
-        if self.spatialorientation_active:
-            val = spatialorientation.orientation[:3]
-            if not val == (None, None, None):
-                self.spatialorientation_values = f"Azimuth: {val[0]}\n Pitch:{val[1]}\n Roll:{val[2]}"
-
         if self.gravity_active:
             val = gravity.gravity
-            if not val = (None, None, None):
-            self.gravity_values = f"x: {val[0]} \ny: {val[1]}\nz: {val[2]}"
+            if not val == (None, None, None):
+                self.gravity_values = f"x: {val[0]} \ny: {val[1]}\nz: {val[2]}"
 
 
 class MainApp(MDApp):
@@ -115,6 +98,7 @@ class MainApp(MDApp):
         The request will produce a popup if permissions have not already been
         been granted, otherwise it will do nothing.
         """
+
         from android.permissions import request_permissions, Permission
 
         def callback(permissions, results):
@@ -130,14 +114,13 @@ class MainApp(MDApp):
 
         request_permissions([Permission.ACCESS_COARSE_LOCATION,
                              Permission.ACCESS_FINE_LOCATION], callback)
-        # # To request permissions without a callback, do:
-        # request_permissions([Permission.ACCESS_COARSE_LOCATION,
-        #                      Permission.ACCESS_FINE_LOCATION])
+
 
     def build(self):
         self.title = "Plyer window"
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Red"
+        self.gps_data = []
 
         try:
             gps.configure(on_location=self.on_location,
@@ -157,6 +140,9 @@ class MainApp(MDApp):
     @mainthread
     def on_location(self, **kwargs):
         self.gps_location = '\n'.join(['{}={}'.format(k, v) for k, v in kwargs.items()])
+        lat = kwargs.get('lat')
+        lon = kwargs.get('lon')
+        self.gps_data.append((lat, lon))
 
     @mainthread
     def on_status(self, stype, status):
@@ -167,6 +153,25 @@ class MainApp(MDApp):
 
     def stop(self):
         gps.stop()
+        self.save_gps_data_to_text()
+
+    def save_gps_data_to_text(self):
+        if self.gps_data:
+            context = mActivity.getApplicationContext()
+            result = context.getExternalFilesDir(None)
+            if result:
+                storage_path = str(result.toString())
+            file_name = "logfile.txt"
+            file_path = storage_path + "/" + file_name
+            try:
+                with open(file_path, "w") as f:
+                    for lat, lon in self.gps_data:
+                        print(f"lat: {lat}, lon: {lon} \n")
+                        f.write(f"Latitude: {lat}, Longitude: {lon}\n")
+            except Exception as e:
+                print(f"The exception is: {e}")
+            self.gps_data = []
+            print("GPS data saved to text file!")
 
 if __name__ == "__main__":
     try:

@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = Plyer Example
+title = Kitesurf logger
 
 # (str) Package name
-package.name = accelbasicexample
+package.name = kitesurflogger
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
@@ -53,7 +53,7 @@ fullscreen = 0
 #
 
 # (list) Permissions
-android.permissions = android.hardware.sensor.accelerometer, BATTERY_STATS, VIBRATE, INTERNET,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION
+android.permissions = android.hardware.sensor.accelerometer, INTERNET,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION, READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 
 # (int) Android API to use
 #android.api = 14
