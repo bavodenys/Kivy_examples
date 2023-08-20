@@ -1,50 +1,10 @@
 <PlyerWindow>:
     MDBoxLayout:
         orientation: 'vertical'
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDRectangleFlatButton:
-                text: 'Enable accelerometer'
-                size_hint: None, 1
-                line_color: 'green' if root.accelerometer_active else 'red'
-                on_press: root.accelerometer_button()
-            MDLabel:
-                text: "Acceleration:"
-            MDLabel:
-                text: root.accelerometer_values
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDRectangleFlatButton:
-                text: 'Enable gravity'
-                size_hint: None, 1
-                line_color: 'green' if root.gravity_active else 'red'
-                on_press: root.gravity_button()
-            MDLabel:
-                text: "Gravity:"
-            MDLabel:
-                text: root.gravity_values
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDLabel:
-                text: app.gps_location
-            MDLabel:
-                text: app.gps_status
-            MDBoxLayout:
-                orientation: 'vertical'
-                MDRectangleFlatButton:
-                    text: 'Start'
-                    size_hint: None, 1
-                    on_press: app.start(1000, 0)
-                MDRectangleFlatButton:
-                    text: 'Stop'
-                    size_hint: None, 1
-                    on_press: app.stop()
-        MDBoxLayout:
-            orientation: 'horizontal'
-            MDRectangleFlatButton:
-                text: 'Gyroscope'
-                size_hint: None, 1
-                line_color: 'green' if root.gyroscope_active else 'red'
-                on_press: root.gyroscope_button()
-            MDLabel:
-                text: root.gyroscope_values
+        MDLabel:
+            text: root.recording_text
+        MDRectangleFlatButton:
+            text: root.recording_button_text
+            size_hint: 1, 1
+            line_color: 'green' if root.recording_active else 'red'
+            on_press: root.start_stop()

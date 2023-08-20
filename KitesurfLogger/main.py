@@ -1,12 +1,14 @@
 from kivymd.app import MDApp
+from kivy.app import App
 from kivy.lang import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
-from plyer import accelerometer, gps, gyroscope, gravity
+from plyer import accelerometer, gps, gravity
 from kivy.properties import StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.utils import platform
 from kivy.clock import mainthread
 from android import mActivity
+import time
 
 # Window size
 WINDOW_WIDTH = 800
@@ -15,80 +17,80 @@ WINDOW_HEIGHT = 1600
 # - buildozer android debug deploy run
 
 class PlyerWindow(MDBoxLayout):
-    accelerometer_values = StringProperty('')
-    accelerometer_active = BooleanProperty(False)
-    gyroscope_values = StringProperty('')
-    gyroscope_active = BooleanProperty(False)
-    gravity_values = StringProperty('')
-    gravity_active = BooleanProperty(False)
+    recording_active = BooleanProperty(False)
+    recording_button_text = StringProperty("START")
+    recording_text = StringProperty("OFF")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         #Window.size = (dp(WINDOW_WIDTH), dp(WINDOW_HEIGHT))
-        # Activate the accelerometer
-        self.accelerometer_active = False
-        self.gravity_active = False
-        self.gyroscope_active = False
-        self.accelerometer_values = f"x: {0} \ny: {0}\nz: {0}"
-        self.gravity_values = f"x: {0} \ny: {0}\nz: {0}"
+        self.recording_active = False
+        self.recording_button_text = "START"
+        self.recording_text = "OFF"
+        self.log_values_array = []
         Clock.schedule_interval(self.update, 1 / 20)
 
-    # Accelerometer button
-    def accelerometer_button(self):
-        try:
-            if self.accelerometer_active:
-                self.accelerometer_active = False
-                accelerometer.disable()
-            else:
-                self.accelerometer_active = True
-                accelerometer.enable()
-        except NotImplementedError:
-            self.accelerometer_values = "ERROR"
-
-
-    def gyroscope_button(self):
-        try:
-            if self.gyroscope_active:
-                self.gyroscope_active = False
-                gyroscope.disable()
-            else:
-                self.gyroscope_active = True
-                gyroscope.enable()
-        except NotImplementedError:
-            self.gyroscope_values = "ERROR"
-
-    def gravity_button(self):
-        try:
-            if self.gravity_active:
-                self.gravity_active = False
-                gravity.disable()
-            else:
-                self.gravity_active = True
-                gravity.enable()
-        except NotImplementedError:
-            self.gravity_values = "ERROR"
-
+    def start_stop(self):
+        MDApp = App.get_running_app()
+        if not(self.recording_active):
+            # Start recording
+            self.recording_active = True
+            self.recording_button_text = "STOP"
+            self.recording_text = "Recording"
+            MDApp.start_gps(50,0)
+            accelerometer.enable()
+            gravity.enable()
+        else:
+            # Stop recording
+            MDApp.stop_gps()
+            self.recording_active = False
+            self.recording_button_text = "START"
+            self.recording_text = "OFF"
+            accelerometer.disable()
+            gravity.disable()
+            self.save_data()
 
     def update(self, dt):
-        if self.accelerometer_active:
+        if self.recording_active:
+            current_time = time.time()
+            timestamp = f"Time: {current_time:.2f};"
+            MDApp = App.get_running_app()
+            gps_values = f"lat: {MDApp.lat}; lon: {MDApp.lon}; "
+            # Acceleration
             val = accelerometer.acceleration[:3]
             if not val == (None, None, None):
-                self.accelerometer_values = f"x: {(val[0])}\ny: {(val[1])}\nz: {(val[2])}"
-
-        if self.gyroscope_active:
-            val = gyroscope.rotation[:3]
-            if not val == (None, None, None):
-                self.gyroscope_values = f"x: {(val[0])}\ny: {(val[1])}\nz: {(val[2])}"
-
-        if self.gravity_active:
+                accelerometer_values = f"accx: {(val[0])}; accy: {(val[1])}; accz: {(val[2])}; "
+            else:
+                accelerometer_values = f"accx: Nan; accy: Nan; accz: Nan; "
+            # Gravity
             val = gravity.gravity
             if not val == (None, None, None):
-                self.gravity_values = f"x: {val[0]} \ny: {val[1]}\nz: {val[2]}"
+                gravity_values = f"grax: {val[0]}; gray: {val[1]}; graz: {val[2]}; "
+            else:
+                gravity_values = f"grax: Nan; gray: Nan; graz: Nan; "
+            self.log_values_array.append(timestamp + gps_values + accelerometer_values + gravity_values)
 
+
+    def save_data(self):
+        context = mActivity.getApplicationContext()
+        result = context.getExternalFilesDir(None)
+        if result:
+            storage_path = str(result.toString())
+        file_name = "logfile.txt"
+        file_path = storage_path + "/" + file_name
+        try:
+            with open(file_path, "w") as f:
+                for log in self.log_values_array:
+                    f.write(f"{log}\n")
+        except Exception as e:
+            print(f"The exception is: {e}")
 
 class MainApp(MDApp):
-    gps_location = StringProperty()
-    gps_status = StringProperty('Click Start to get GPS location updates')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.lat = 0
+        self.lon = 0
 
     def request_android_permissions(self):
         """
@@ -117,10 +119,9 @@ class MainApp(MDApp):
 
 
     def build(self):
-        self.title = "Plyer window"
+        self.title = "Kitesurf logger"
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Red"
-        self.gps_data = []
 
         try:
             gps.configure(on_location=self.on_location,
@@ -128,7 +129,6 @@ class MainApp(MDApp):
         except NotImplementedError:
             import traceback
             traceback.print_exc()
-            self.gps_status = 'GPS is not implemented for your platform'
 
         if platform == "android":
             print("gps.py: Android detected. Requesting permissions")
@@ -139,39 +139,19 @@ class MainApp(MDApp):
 
     @mainthread
     def on_location(self, **kwargs):
-        self.gps_location = '\n'.join(['{}={}'.format(k, v) for k, v in kwargs.items()])
-        lat = kwargs.get('lat')
-        lon = kwargs.get('lon')
-        self.gps_data.append((lat, lon))
+        #self.gps_location = '\n'.join(['{}={}'.format(k, v) for k, v in kwargs.items()])
+        self.lat = kwargs.get('lat')
+        self.lon = kwargs.get('lon')
 
     @mainthread
     def on_status(self, stype, status):
-        self.gps_status = 'type={}\n{}'.format(stype, status)
+        pass
 
-    def start(self, minTime, minDistance):
+    def start_gps(self, minTime, minDistance):
         gps.start(minTime, minDistance)
 
-    def stop(self):
+    def stop_gps(self):
         gps.stop()
-        self.save_gps_data_to_text()
-
-    def save_gps_data_to_text(self):
-        if self.gps_data:
-            context = mActivity.getApplicationContext()
-            result = context.getExternalFilesDir(None)
-            if result:
-                storage_path = str(result.toString())
-            file_name = "logfile.txt"
-            file_path = storage_path + "/" + file_name
-            try:
-                with open(file_path, "w") as f:
-                    for lat, lon in self.gps_data:
-                        print(f"lat: {lat}, lon: {lon} \n")
-                        f.write(f"Latitude: {lat}, Longitude: {lon}\n")
-            except Exception as e:
-                print(f"The exception is: {e}")
-            self.gps_data = []
-            print("GPS data saved to text file!")
 
 if __name__ == "__main__":
     try:
