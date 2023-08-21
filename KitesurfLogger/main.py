@@ -8,11 +8,15 @@ from kivy.clock import Clock
 from kivy.utils import platform
 from kivy.clock import mainthread
 from android import mActivity
+from copy import deepcopy
 import time
+import datetime
+import json
 
 # Window size
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 1600
+
 
 # - buildozer android debug deploy run
 
@@ -52,38 +56,49 @@ class PlyerWindow(MDBoxLayout):
 
     def update(self, dt):
         if self.recording_active:
+            log = {}
             current_time = time.time()
-            timestamp = f"Time: {current_time:.2f};"
+            log['timestamp'] = current_time
             MDApp = App.get_running_app()
-            gps_values = f"lat: {MDApp.lat}; lon: {MDApp.lon}; "
+            log['lat'] = MDApp.lat
+            log['lon'] = MDApp.lon
             # Acceleration
             val = accelerometer.acceleration[:3]
             if not val == (None, None, None):
-                accelerometer_values = f"accx: {(val[0])}; accy: {(val[1])}; accz: {(val[2])}; "
+                log['accx'] = val[0]
+                log['accy'] = val[1]
+                log['accz'] = val[2]
             else:
-                accelerometer_values = f"accx: Nan; accy: Nan; accz: Nan; "
+                log['accx'] = 'Nan'
+                log['accy'] = 'Nan'
+                log['accz'] = 'Nan'
             # Gravity
             val = gravity.gravity
             if not val == (None, None, None):
-                gravity_values = f"grax: {val[0]}; gray: {val[1]}; graz: {val[2]}; "
+                log['grax'] = val[0]
+                log['gray'] = val[1]
+                log['graz'] = val[2]
             else:
-                gravity_values = f"grax: Nan; gray: Nan; graz: Nan; "
-            self.log_values_array.append(timestamp + gps_values + accelerometer_values + gravity_values)
-
+                log['grax'] = 'Nan'
+                log['gray'] = 'Nan'
+                log['graz'] = 'Nan'
+            self.log_values_array.append(deepcopy(log))
 
     def save_data(self):
+        current_datetime = datetime.datetime.now()
+        formatted_datetime = current_datetime.strftime('%Y-%m-%d-%H-%M-%S')
         context = mActivity.getApplicationContext()
         result = context.getExternalFilesDir(None)
         if result:
             storage_path = str(result.toString())
-        file_name = "logfile.txt"
+        file_name = f"logfile_{formatted_datetime}.json"
         file_path = storage_path + "/" + file_name
         try:
-            with open(file_path, "w") as f:
-                for log in self.log_values_array:
-                    f.write(f"{log}\n")
+            with open(file_path, "w") as json_file:
+                json.dump(self.log_values_array, json_file)
         except Exception as e:
             print(f"The exception is: {e}")
+        self.log_values_array = []
 
 class MainApp(MDApp):
 
