@@ -2,7 +2,7 @@ from kivymd.app import MDApp
 from kivy.app import App
 from kivy.lang import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
-from plyer import accelerometer, gps, gravity
+from plyer import gps, gyroscope, compass
 from kivy.properties import StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.utils import platform
@@ -42,16 +42,16 @@ class PlyerWindow(MDBoxLayout):
             self.recording_button_text = "STOP"
             self.recording_text = "Recording"
             MDApp.start_gps(50,0)
-            accelerometer.enable()
-            gravity.enable()
+            gyroscope.enable()
+            compass.enable()
         else:
             # Stop recording
             MDApp.stop_gps()
             self.recording_active = False
             self.recording_button_text = "START"
             self.recording_text = "OFF"
-            accelerometer.disable()
-            gravity.disable()
+            gyroscope.disable()
+            compass.disable()
             self.save_data()
 
     def update(self, dt):
@@ -62,26 +62,25 @@ class PlyerWindow(MDBoxLayout):
             MDApp = App.get_running_app()
             log['lat'] = MDApp.lat
             log['lon'] = MDApp.lon
-            # Acceleration
-            val = accelerometer.acceleration[:3]
+            val = compass.field[:3]
             if not val == (None, None, None):
-                log['accx'] = val[0]
-                log['accy'] = val[1]
-                log['accz'] = val[2]
+                log['cx'] = val[0]
+                log['cy'] = val[1]
+                log['cz'] = val[2]
             else:
-                log['accx'] = 'Nan'
-                log['accy'] = 'Nan'
-                log['accz'] = 'Nan'
-            # Gravity
-            val = gravity.gravity
+                log['cx'] = 'Nan'
+                log['cy'] = 'Nan'
+                log['cz'] = 'Nan'
+            # Gyroscope
+            val = gyroscope.orientation[:3]
             if not val == (None, None, None):
-                log['grax'] = val[0]
-                log['gray'] = val[1]
-                log['graz'] = val[2]
+                log['x'] = val[0]
+                log['y'] = val[1]
+                log['z'] = val[2]
             else:
-                log['grax'] = 'Nan'
-                log['gray'] = 'Nan'
-                log['graz'] = 'Nan'
+                log['x'] = 'Nan'
+                log['y'] = 'Nan'
+                log['z'] = 'Nan'
             self.log_values_array.append(deepcopy(log))
 
     def save_data(self):
