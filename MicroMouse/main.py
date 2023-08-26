@@ -26,6 +26,12 @@ class MicroMouse(Widget):
     def __init__(self, start_pos_x, start_pos_y, **kwargs):
         self.pos_x = start_pos_x
         self.pos_y = start_pos_y
+        # Orientation
+        # Facing up: 0
+        # Facing right: 3
+        # Facing down: 6
+        # Facing left: 9
+        self.orientation = 0
         self.mouse_widgets = []
         super().__init__(**kwargs)
         Color(0,0,1)
@@ -36,6 +42,34 @@ class MicroMouse(Widget):
         Color(0,0,1)
         self.ellipse = Ellipse(pos=(self.pos_x - MOUSE_SIZE_X / 2, self.pos_y - MOUSE_SIZE_Y / 2), size=(MOUSE_SIZE_X, MOUSE_SIZE_Y))
 
+    # Function to move mouse
+    def move(self):
+        if self.orientation == C_MOUSE_ORIEN_UP:
+            self.pos_y = self.pos_y + 1
+        elif self.orientation == C_MOUSE_ORIEN_RIGHT:
+            self.pos_x = self.pos_x + 1
+        elif self.orientation == C_MOUSE_ORIEN_DOWN:
+            self.pos_y = self.pos_y - 1
+        elif self.orientation == C_MOUSE_ORIEN_LEFT:
+            self.pos_x = self.pos_x - 1
+        else:
+            pass
+        self.update_pos()
+
+    def stop(self):
+        pass
+
+    # Function to turn right
+    def go_right(self):
+        self.orientation = self.orientation + 3
+        if self.orientation == 12:
+            self.orientation = 0
+
+    # Function to turn left
+    def go_left(self):
+        self.orientation = self.orientation - 3
+        if self.orientation == -3:
+            self.orientation = 9
 
 
 class MainWindow(MDBoxLayout):
@@ -45,10 +79,6 @@ class MainWindow(MDBoxLayout):
         Clock.schedule_interval(self.update, 1 / 60)
         # Generate the maze
         self.maze, finish = generate_maze(MAZE_BLOCKS_X, MAZE_BLOCKS_Y)
-        #for i in range(MAZE_BLOCKS_X):
-        #    for j in range(MAZE_BLOCKS_Y):
-        #        self.maze[i][j] = self.maze[i][j] - 64
-
         self.maze_widgets = []
         # Create the maze
         with self.canvas:
@@ -77,11 +107,11 @@ class MainWindow(MDBoxLayout):
 
     # Update
     def update(self, dt):
-        distance_up, distance_down, distance_right, distance_left = get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y], self.maze)
-        print(f" UP:{distance_up}, DOWN: {distance_down}, RIGHT: {distance_right}, LEFT: {distance_left}")
+        sensor_front, sensor_right, sensor_left, sensor_back= get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y],self.mouse.orientation, self.maze)
+        print(f"front:{sensor_front}, right:{sensor_right}, left: {sensor_left}, back: {sensor_back}")
         self.canvas.remove(self.mouse.ellipse)
         with self.canvas:
-            self.mouse.update_pos()
+            self.mouse.move()
 
 
 class MainApp(MDApp):

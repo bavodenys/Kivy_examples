@@ -58,7 +58,7 @@ def generate_maze(rows, cols):
     return maze, finish
 
 # Function to return distance sensor values: up, left, right, down
-def get_distance_sensor_values(mouse_pos_abs, maze):
+def get_distance_sensor_values(mouse_pos_abs, mouse_orientation,  maze):
     # Determine the position in the maze with as reference the upper left corner
     mouse_pos_rel_x = mouse_pos_abs[0] - MAZE_REF_X
     mouse_pos_rel_y = MAZE_REF_Y - mouse_pos_abs[1]
@@ -92,5 +92,27 @@ def get_distance_sensor_values(mouse_pos_abs, maze):
     while (not(maze[index_y][index_x-i] & C_CELL_LEFT == C_CELL_LEFT)):
         distance_left = distance_left + MAZE_BLOCK_SIZE
         i += 1
-    # Return distances
-    return distance_up, distance_down, distance_right, distance_left
+    # Determine the sensor values
+    if mouse_orientation == C_MOUSE_ORIEN_UP:
+        sensor_front = distance_up
+        sensor_right = distance_right
+        sensor_left = distance_left
+        sensor_back = distance_down
+    elif mouse_orientation == C_MOUSE_ORIEN_RIGHT:
+        sensor_front = distance_right
+        sensor_right = distance_down
+        sensor_left = distance_up
+        sensor_back = distance_left
+    elif mouse_orientation == C_MOUSE_ORIEN_DOWN:
+        sensor_front = distance_down
+        sensor_right = distance_left
+        sensor_left = distance_right
+        sensor_back = distance_up
+    elif mouse_orientation == C_MOUSE_ORIEN_LEFT:
+        sensor_front = distance_left
+        sensor_right = distance_up
+        sensor_left = distance_down
+        sensor_back = distance_right
+
+    # Return sensor values
+    return sensor_front, sensor_right, sensor_left, sensor_back
