@@ -54,7 +54,6 @@ class MicroMouse(Widget):
             self.pos_x = self.pos_x - 1
         else:
             pass
-        self.update_pos()
 
     def stop(self):
         pass
@@ -63,13 +62,13 @@ class MicroMouse(Widget):
     def go_right(self):
         self.orientation = self.orientation + 3
         if self.orientation == 12:
-            self.orientation = 0
+            self.orientation = C_MOUSE_ORIEN_UP
 
     # Function to turn left
     def go_left(self):
         self.orientation = self.orientation - 3
         if self.orientation == -3:
-            self.orientation = 9
+            self.orientation = C_MOUSE_ORIEN_LEFT
 
 
 class MainWindow(MDBoxLayout):
@@ -108,10 +107,19 @@ class MainWindow(MDBoxLayout):
     # Update
     def update(self, dt):
         sensor_front, sensor_right, sensor_left, sensor_back= get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y],self.mouse.orientation, self.maze)
-        print(f"front:{sensor_front}, right:{sensor_right}, left: {sensor_left}, back: {sensor_back}")
         self.canvas.remove(self.mouse.ellipse)
         with self.canvas:
-            self.mouse.move()
+
+            # Replace later with maze solving strategy
+
+            if sensor_front <= 15:
+                if sensor_right <= 15:
+                    self.mouse.go_left()
+                else:
+                    self.mouse.go_right()
+            else:
+                self.mouse.move()
+            self.mouse.update_pos()
 
 
 class MainApp(MDApp):
