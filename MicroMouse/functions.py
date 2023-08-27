@@ -133,3 +133,16 @@ def get_distance_sensor_values(mouse_pos_abs, mouse_orientation,  maze):
 
     # Return sensor values
     return sensor_front, sensor_right, sensor_left, sensor_back
+
+def determine_if_mouse_reached_finish(finish, mouse):
+    finish_block_x = MAZE_REF_X + MAZE_BLOCK_SIZE*finish[1]
+    finish_block_y = MAZE_REF_Y - MAZE_BLOCK_SIZE*finish[0]
+
+
+    if mouse.pos_x > finish_block_x + WALL_THICKNESS + MOUSE_SIZE_X/2 and \
+        mouse.pos_x < finish_block_x + MAZE_BLOCK_SIZE - WALL_THICKNESS - MOUSE_SIZE_X/2 and \
+        mouse.pos_y < finish_block_y - WALL_THICKNESS - MOUSE_SIZE_Y/2 and \
+        mouse.pos_y > finish_block_y - MAZE_BLOCK_SIZE + WALL_THICKNESS + MOUSE_SIZE_Y/2:
+        return True
+    else:
+        return False

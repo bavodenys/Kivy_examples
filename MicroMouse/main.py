@@ -77,10 +77,11 @@ class MainWindow(MDBoxLayout):
         super().__init__(**kwargs)
         Clock.schedule_interval(self.update, 1 / 60)
         # Generate the maze
-        self.maze, finish = generate_maze(MAZE_BLOCKS_X, MAZE_BLOCKS_Y)
+        self.maze, self.finish = generate_maze(MAZE_BLOCKS_X, MAZE_BLOCKS_Y)
         self.maze_widgets = []
         # right counter should move to path planning function
-        self.right_counter = -35
+        self.right_counter = -42
+        self.finished = False
         # Create the maze
         with self.canvas:
             self.mouse = MicroMouse(START_POS_X_MOUSE, START_POS_Y_MOUSE)
@@ -108,26 +109,35 @@ class MainWindow(MDBoxLayout):
 
     # Update
     def update(self, dt):
-        sensor_front, sensor_right, sensor_left, sensor_back= get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y],self.mouse.orientation, self.maze)
-        self.canvas.remove(self.mouse.ellipse)
-        with self.canvas:
+        if not(self.finished):
+            sensor_front, sensor_right, sensor_left, sensor_back= get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y],self.mouse.orientation, self.maze)
+            self.canvas.remove(self.mouse.ellipse)
+            with self.canvas:
 
-            # Replace later with maze solving strategy
-            if sensor_front <= 15:
-                if sensor_right <= 15:
-                    self.mouse.go_left()
-                else:
-                    self.mouse.go_right()
-                    self.right_counter = -35
-            else:
-                if sensor_right >= 50:
-                    self.right_counter +=1
-                    print(self.right_counter)
-                    if self.right_counter >= (35):
+
+
+                # Replace later with maze solving strategy
+                if sensor_front <= 15:
+                    if sensor_right <= 15:
+                        self.mouse.go_left()
+                    else:
                         self.mouse.go_right()
-                        self.right_counter = -35
-                self.mouse.move()
-            self.mouse.update_pos()
+                        self.right_counter = -42
+                else:
+                    if sensor_right >= 50:
+                        self.right_counter +=1
+                        if self.right_counter >= (35):
+                            self.mouse.go_right()
+                            self.right_counter = -42
+                    self.mouse.move()
+                self.mouse.update_pos()
+
+
+            self.finished = determine_if_mouse_reached_finish(self.finish, self.mouse)
+            if self.finished:
+                print("Mouse found the finish")
+
+
 
 
 class MainApp(MDApp):
