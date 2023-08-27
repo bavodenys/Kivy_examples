@@ -69,27 +69,44 @@ def get_distance_sensor_values(mouse_pos_abs, mouse_orientation,  maze):
     remain_x = mouse_pos_rel_x % MAZE_BLOCK_SIZE
     remain_y = mouse_pos_rel_y % MAZE_BLOCK_SIZE
     # Determine distance up
+
     distance_up = remain_y - MOUSE_SIZE_Y/2 - WALL_THICKNESS
     i = 0
     while (not(maze[index_y-i][index_x] & C_CELL_TOP == C_CELL_TOP)):
+        if remain_x <= WALL_THICKNESS or (MAZE_BLOCK_SIZE - remain_x) <= WALL_THICKNESS:
+            if maze[index_y-i][index_x] & C_CELL_RIGHT == C_CELL_RIGHT or maze[index_y-i][index_x] & C_CELL_LEFT == C_CELL_LEFT:
+                distance_up = distance_up + WALL_THICKNESS
+                break
         distance_up = distance_up + MAZE_BLOCK_SIZE
         i += 1
     # Determine distance down
     distance_down = (MAZE_BLOCK_SIZE - remain_y) - MOUSE_SIZE_Y/2 - WALL_THICKNESS
     i = 0
     while (not(maze[index_y+i][index_x] & C_CELL_BOTTOM == C_CELL_BOTTOM)):
+        if remain_x <= WALL_THICKNESS or (MAZE_BLOCK_SIZE - remain_x) <= WALL_THICKNESS:
+            if maze[index_y+i][index_x] & C_CELL_RIGHT == C_CELL_RIGHT or maze[index_y+i][index_x] & C_CELL_LEFT == C_CELL_LEFT:
+                distance_down = distance_down + WALL_THICKNESS
+                break
         distance_down = distance_down + MAZE_BLOCK_SIZE
         i += 1
     # Determine distance right
     distance_right = (MAZE_BLOCK_SIZE - remain_x) - MOUSE_SIZE_X/2 - WALL_THICKNESS
     i = 0
     while (not(maze[index_y][index_x+i] & C_CELL_RIGHT == C_CELL_RIGHT)):
+        if remain_y <= WALL_THICKNESS or (MAZE_BLOCK_SIZE - remain_y) <= WALL_THICKNESS:
+            if maze[index_y][index_x+i] & C_CELL_TOP == C_CELL_TOP or maze[index_y][index_x+i] & C_CELL_BOTTOM == C_CELL_BOTTOM:
+                distance_right = distance_right + WALL_THICKNESS
+                break
         distance_right = distance_right + MAZE_BLOCK_SIZE
         i += 1
     # Determine distance left
     distance_left = remain_x - MOUSE_SIZE_X/2 - WALL_THICKNESS
     i = 0
     while (not(maze[index_y][index_x-i] & C_CELL_LEFT == C_CELL_LEFT)):
+        if remain_y <= WALL_THICKNESS or (MAZE_BLOCK_SIZE - remain_y) <= WALL_THICKNESS:
+            if maze[index_y][index_x-i] & C_CELL_TOP == C_CELL_TOP or maze[index_y][index_x-i] & C_CELL_BOTTOM == C_CELL_BOTTOM:
+                distance_left = distance_left + WALL_THICKNESS
+                break
         distance_left = distance_left + MAZE_BLOCK_SIZE
         i += 1
     # Determine the sensor values

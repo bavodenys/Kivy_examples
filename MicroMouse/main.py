@@ -79,6 +79,8 @@ class MainWindow(MDBoxLayout):
         # Generate the maze
         self.maze, finish = generate_maze(MAZE_BLOCKS_X, MAZE_BLOCKS_Y)
         self.maze_widgets = []
+        # right counter should move to path planning function
+        self.right_counter = -35
         # Create the maze
         with self.canvas:
             self.mouse = MicroMouse(START_POS_X_MOUSE, START_POS_Y_MOUSE)
@@ -111,13 +113,19 @@ class MainWindow(MDBoxLayout):
         with self.canvas:
 
             # Replace later with maze solving strategy
-
             if sensor_front <= 15:
                 if sensor_right <= 15:
                     self.mouse.go_left()
                 else:
                     self.mouse.go_right()
+                    self.right_counter = -35
             else:
+                if sensor_right >= 50:
+                    self.right_counter +=1
+                    print(self.right_counter)
+                    if self.right_counter >= (35):
+                        self.mouse.go_right()
+                        self.right_counter = -35
                 self.mouse.move()
             self.mouse.update_pos()
 
