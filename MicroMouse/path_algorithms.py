@@ -28,4 +28,5 @@ class bavo_algorithm():
                 else:
                     self.go_straight = True
             else:
+                self.right_counter = 0
                 self.go_straight = True
