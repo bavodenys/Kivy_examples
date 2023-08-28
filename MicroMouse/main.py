@@ -8,7 +8,7 @@ from kivy.graphics import Color, Rectangle, Ellipse
 from kivy.clock import Clock
 from functions import *
 from calibrations import *
-import random
+from path_algorithms import *
 
 # Version
 MAJOR_VERSION = 0
@@ -79,8 +79,8 @@ class MainWindow(MDBoxLayout):
         # Generate the maze
         self.maze, self.finish = generate_maze(MAZE_BLOCKS_X, MAZE_BLOCKS_Y)
         self.maze_widgets = []
-        # right counter should move to path planning function
-        self.right_counter = -42
+        # Selection of algorithm
+        self.algorithm = bavo_algorithm()
         self.finished = False
         # Create the maze
         with self.canvas:
@@ -110,34 +110,23 @@ class MainWindow(MDBoxLayout):
     # Update
     def update(self, dt):
         if not(self.finished):
-            sensor_front, sensor_right, sensor_left, sensor_back= get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y],self.mouse.orientation, self.maze)
+            sensor_front, sensor_right, sensor_left, sensor_back = get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y],self.mouse.orientation, self.maze)
+            self.algorithm.determine_next_move(sensor_front, sensor_right, sensor_left, sensor_back)
             self.canvas.remove(self.mouse.ellipse)
             with self.canvas:
-
-
-
-                # Replace later with maze solving strategy
-                if sensor_front <= 15:
-                    if sensor_right <= 15:
-                        self.mouse.go_left()
-                    else:
-                        self.mouse.go_right()
-                        self.right_counter = -42
-                else:
-                    if sensor_right >= 50:
-                        self.right_counter +=1
-                        if self.right_counter >= (35):
-                            self.mouse.go_right()
-                            self.right_counter = -42
+                if self.algorithm.go_straight:
                     self.mouse.move()
+                elif self.algorithm.go_right:
+                    self.mouse.go_right()
+                elif self.algorithm.go_left:
+                    self.mouse.go_left()
+                else:
+                    pass
                 self.mouse.update_pos()
-
-
+            # Determine if the mouse finished!
             self.finished = determine_if_mouse_reached_finish(self.finish, self.mouse)
             if self.finished:
                 print("Mouse found the finish")
-
-
 
 
 class MainApp(MDApp):
