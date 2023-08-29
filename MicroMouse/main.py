@@ -80,7 +80,7 @@ class MainWindow(MDBoxLayout):
         self.maze, self.finish = generate_maze(MAZE_BLOCKS_X, MAZE_BLOCKS_Y)
         self.maze_widgets = []
         # Selection of algorithm
-        self.algorithm = turn_right_algorithm()
+        self.algorithm = maze_solve_algorithm(turning_preference="left")
         self.finished = False
         # Create the maze
         with self.canvas:
