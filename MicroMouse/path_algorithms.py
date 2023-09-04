@@ -1,6 +1,6 @@
 from calibrations import *
 
-class maze_solve_algorithm():
+class maze_solve_algorithm_1():
 
     def __init__(self, turning_preference, **kwargs):
         super().__init__(**kwargs)
@@ -68,3 +68,6 @@ class maze_solve_algorithm():
                         self.left_counter = 0
                         self.go_straight = True
                         self.right_counter += 1
+
+class maze_solve_algorithm_2():
+    pass

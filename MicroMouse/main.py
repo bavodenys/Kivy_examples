@@ -80,7 +80,7 @@ class MainWindow(MDBoxLayout):
         self.maze, self.finish = generate_maze(MAZE_BLOCKS_X, MAZE_BLOCKS_Y)
         self.maze_widgets = []
         # Selection of algorithm
-        self.algorithm = maze_solve_algorithm(turning_preference="left")
+        self.algorithm = maze_solve_algorithm_1(turning_preference="left")
         self.finished = False
         # Create the maze
         with self.canvas:
@@ -106,6 +106,18 @@ class MainWindow(MDBoxLayout):
                         self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + i * MAZE_BLOCK_SIZE, MAZE_REF_Y - MAZE_BLOCK_SIZE - j * MAZE_BLOCK_SIZE],size=[WALL_THICKNESS, MAZE_BLOCK_SIZE]))
                     if self.maze[j][i] & C_CELL_TOP == C_CELL_TOP:
                         self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + i * MAZE_BLOCK_SIZE, MAZE_REF_Y - WALL_THICKNESS - j * MAZE_BLOCK_SIZE],size=[MAZE_BLOCK_SIZE, WALL_THICKNESS]))
+
+            # Make a maze box to visualize searching algorithms
+            # Upper wall
+            self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS, MAZE_REF_Y-WALL_THICKNESS], size=[MAZE_BLOCK_SIZE*MAZE_BLOCKS_X, WALL_THICKNESS]))
+            # Bottom wall
+            self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS, MAZE_REF_Y-(MAZE_BLOCKS_Y*MAZE_BLOCK_SIZE)-WALL_THICKNESS], size=[MAZE_BLOCK_SIZE*MAZE_BLOCKS_X, WALL_THICKNESS]))
+            # Left wall
+            self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS, MAZE_REF_Y - MAZE_BLOCK_SIZE * MAZE_BLOCKS_Y],size=[WALL_THICKNESS, MAZE_BLOCK_SIZE*MAZE_BLOCKS_Y]))
+            # Right wall
+            self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS + MAZE_BLOCKS_X * MAZE_BLOCK_SIZE - WALL_THICKNESS, MAZE_REF_Y - MAZE_BLOCK_SIZE * MAZE_BLOCKS_Y], size=[WALL_THICKNESS, MAZE_BLOCK_SIZE*MAZE_BLOCKS_Y]))
+
+
 
     # Update
     def update(self, dt):
