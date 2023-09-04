@@ -35,12 +35,14 @@ class MicroMouse(Widget):
         self.mouse_widgets = []
         super().__init__(**kwargs)
         Color(0,0,1)
-        self.ellipse = Ellipse(pos=(self.pos_x-MOUSE_SIZE_X/2,self.pos_y-MOUSE_SIZE_Y/2), size=(MOUSE_SIZE_X, MOUSE_SIZE_Y))
+        self.ellipse_left = Ellipse(pos=(self.pos_x-MOUSE_SIZE_X/2,self.pos_y-MOUSE_SIZE_Y/2), size=(MOUSE_SIZE_X, MOUSE_SIZE_Y))
+        self.ellipse_right = Ellipse(pos=(self.pos_x + MAZE_REF_X_OFFS - MOUSE_SIZE_X/2,self.pos_y-MOUSE_SIZE_Y/2), size=(MOUSE_SIZE_X, MOUSE_SIZE_Y))
 
     # Update the ellipse on the canvas
     def update_pos(self):
         Color(0,0,1)
-        self.ellipse = Ellipse(pos=(self.pos_x - MOUSE_SIZE_X / 2, self.pos_y - MOUSE_SIZE_Y / 2), size=(MOUSE_SIZE_X, MOUSE_SIZE_Y))
+        self.ellipse_left = Ellipse(pos=(self.pos_x - MOUSE_SIZE_X / 2, self.pos_y - MOUSE_SIZE_Y / 2), size=(MOUSE_SIZE_X, MOUSE_SIZE_Y))
+        self.ellipse_right = Ellipse(pos=(self.pos_x + MAZE_REF_X_OFFS - MOUSE_SIZE_X / 2, self.pos_y - MOUSE_SIZE_Y / 2),size=(MOUSE_SIZE_X, MOUSE_SIZE_Y))
 
     # Function to move mouse
     def move(self):
@@ -81,6 +83,8 @@ class MainWindow(MDBoxLayout):
         self.maze_widgets = []
         # Selection of algorithm
         self.algorithm = maze_solve_algorithm_1(turning_preference="left")
+
+
         self.finished = False
         # Create the maze
         with self.canvas:
@@ -108,6 +112,12 @@ class MainWindow(MDBoxLayout):
                         self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + i * MAZE_BLOCK_SIZE, MAZE_REF_Y - WALL_THICKNESS - j * MAZE_BLOCK_SIZE],size=[MAZE_BLOCK_SIZE, WALL_THICKNESS]))
 
             # Make a maze box to visualize searching algorithms
+            # Set start and finish
+            Color(0, 1, 0)
+            self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS + self.finish[1] * MAZE_BLOCK_SIZE,MAZE_REF_Y - MAZE_BLOCK_SIZE - self.finish[0] * MAZE_BLOCK_SIZE],size=[MAZE_BLOCK_SIZE, MAZE_BLOCK_SIZE]))
+            Color(1, 0, 0)
+            self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS, MAZE_REF_Y - MAZE_BLOCK_SIZE * MAZE_BLOCKS_Y],size=[MAZE_BLOCK_SIZE, MAZE_BLOCK_SIZE]))
+            Color(1, 1, 0)
             # Upper wall
             self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS, MAZE_REF_Y-WALL_THICKNESS], size=[MAZE_BLOCK_SIZE*MAZE_BLOCKS_X, WALL_THICKNESS]))
             # Bottom wall
@@ -118,13 +128,26 @@ class MainWindow(MDBoxLayout):
             self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS + MAZE_BLOCKS_X * MAZE_BLOCK_SIZE - WALL_THICKNESS, MAZE_REF_Y - MAZE_BLOCK_SIZE * MAZE_BLOCKS_Y], size=[WALL_THICKNESS, MAZE_BLOCK_SIZE*MAZE_BLOCKS_Y]))
 
 
-
     # Update
     def update(self, dt):
         if not(self.finished):
+            index_x, index_y = get_mouse_index([self.mouse.pos_x, self.mouse.pos_y])
+            if self.maze[index_x][index_y] & C_CELL_VISITED == 0:
+                with self.canvas:
+                    Color(1, 1, 0)
+                    if self.maze[index_y][index_x] & C_CELL_BOTTOM == C_CELL_BOTTOM:
+                        self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS + index_x * MAZE_BLOCK_SIZE, MAZE_REF_Y - MAZE_BLOCK_SIZE - index_y * MAZE_BLOCK_SIZE],size=[MAZE_BLOCK_SIZE, WALL_THICKNESS]))
+                    if self.maze[index_y][index_x] & C_CELL_RIGHT == C_CELL_RIGHT:
+                        self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS + MAZE_BLOCK_SIZE - WALL_THICKNESS + index_x * MAZE_BLOCK_SIZE,MAZE_REF_Y - MAZE_BLOCK_SIZE - index_y * MAZE_BLOCK_SIZE],size=[WALL_THICKNESS, MAZE_BLOCK_SIZE]))
+                    if self.maze[index_y][index_x] & C_CELL_LEFT == C_CELL_LEFT:
+                        self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS + index_x * MAZE_BLOCK_SIZE, MAZE_REF_Y - MAZE_BLOCK_SIZE - index_y * MAZE_BLOCK_SIZE],size=[WALL_THICKNESS, MAZE_BLOCK_SIZE]))
+                    if self.maze[index_y][index_x] & C_CELL_TOP == C_CELL_TOP:
+                        self.maze_widgets.append(Rectangle(pos=[MAZE_REF_X + MAZE_REF_X_OFFS + index_x * MAZE_BLOCK_SIZE, MAZE_REF_Y - WALL_THICKNESS -index_y * MAZE_BLOCK_SIZE],size=[MAZE_BLOCK_SIZE, WALL_THICKNESS]))
+
             sensor_front, sensor_right, sensor_left, sensor_back = get_distance_sensor_values([self.mouse.pos_x, self.mouse.pos_y],self.mouse.orientation, self.maze)
             self.algorithm.determine_next_move(sensor_front, sensor_right, sensor_left, sensor_back)
-            self.canvas.remove(self.mouse.ellipse)
+            self.canvas.remove(self.mouse.ellipse_left)
+            self.canvas.remove(self.mouse.ellipse_right)
             with self.canvas:
                 if self.algorithm.go_straight:
                     self.mouse.move()

@@ -55,10 +55,23 @@ def generate_maze(rows, cols):
         else:
             stack.pop()
 
+    # Remove visited property
+    for j in range(MAZE_BLOCKS_Y):
+        for i in range(MAZE_BLOCKS_X):
+            maze[j][i] = maze[j][i] - C_CELL_VISITED
+
     return maze, finish
 
+def get_mouse_index(mouse_pos_abs):
+    mouse_pos_rel_x = mouse_pos_abs[0] - MAZE_REF_X
+    mouse_pos_rel_y = MAZE_REF_Y - mouse_pos_abs[1]
+    # Determine the cell the mouse is in
+    index_x = math.floor(mouse_pos_rel_x / MAZE_BLOCK_SIZE)
+    index_y = math.floor(mouse_pos_rel_y / MAZE_BLOCK_SIZE)
+    return index_x, index_y
+
 # Function to return distance sensor values: up, left, right, down
-def get_distance_sensor_values(mouse_pos_abs, mouse_orientation,  maze):
+def get_distance_sensor_values(mouse_pos_abs, mouse_orientation, maze):
     # Determine the position in the maze with as reference the upper left corner
     mouse_pos_rel_x = mouse_pos_abs[0] - MAZE_REF_X
     mouse_pos_rel_y = MAZE_REF_Y - mouse_pos_abs[1]
