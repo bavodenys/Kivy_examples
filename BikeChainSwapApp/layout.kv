@@ -1,0 +1,14 @@
+WindowManager:
+    MainWindow:
+
+<MainWindow>:
+    name: 'main'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDTopAppBar:
+            title: 'BikeChainSwapApp'
+            right_action_items: [["information-outline", lambda x: app.call_about()]]
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            MDList:
