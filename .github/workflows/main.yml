@@ -1,0 +1,47 @@
+name: Build AAB Package
+
+on:
+  push:
+    branches:
+      - main
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      with:
+        path: Kivy_examples/BikeChainSwapApp  # Path to the specific folder
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          python3-pip \
+          build-essential \
+          git \
+          python3 \
+          python3-setuptools \
+          python3-venv \
+          python3-dev \
+          libssl-dev \
+          libffi-dev
+
+    - name: Change Directory
+      run: cd Kivy_examples/BikeChainSwapApp    
+
+    - name: Install Buildozer
+      run: |
+        pip install -r requirements.txt
+
+    - name: Build AAB Package
+      run: |
+        buildozer init
+        buildozer android release
