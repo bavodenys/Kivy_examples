@@ -15,8 +15,15 @@ jobs:
       with:
         path: BikeChainSwapApp  
 
-    - name: Change Directory
-      run: cd BikeChainSwapApp
+    - name: Check if requirements.txt exists
+      run: |
+        cd BikeChainSwapApp
+        if [ -f "requirements.txt" ]; then
+          echo "requirements.txt found."
+        else
+          echo "requirements.txt not found."
+          exit 1
+        fi
 
     - name: Install Dependencies
       run: |
