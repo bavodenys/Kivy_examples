@@ -1,0 +1,50 @@
+name: Build AAB Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      with:
+        repository: bavodenys/Kivy_examples
+        path: Kivy_examples
+    
+    - name: Check if requirements.txt exists
+      run: |
+        cd Kivy_examples/BikeChainSwapApp
+        if [ -f "requirements.txt" ]; then
+          echo "requirements.txt found."
+        else
+          echo "requirements.txt not found."
+          exit 1
+        fi
+
+    - name: Install Dependencies
+      if: success()
+      run: |
+        cd Kivy_examples/BikeChainSwapApp
+        sudo apt update
+        sudo apt install -y \
+          python3-pip \
+          build-essential \
+          git \
+          python3 \
+          python3-setuptools \
+          python3-venv \
+          python3-dev \
+          libssl-dev \
+          libffi-dev
+        pip install -r requirements.txt
+
+    - name: Build AAB Package
+      if: success()
+      run: |
+        cd Kivy_examples/BikeChainSwapApp
+        buildozer android release
