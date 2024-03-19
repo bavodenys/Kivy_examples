@@ -18,6 +18,9 @@ jobs:
 
     - name: Navigate to BikeChainSwapApp directory
       run: cd Kivy_examples/BikeChainSwapApp
+
+    - name: Show files in BikeChainSwapApp directory
+      run: ls
     
     - name: Check if requirements.txt exists
       run: |
