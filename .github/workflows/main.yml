@@ -13,11 +13,14 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
       with:
-        path: Kivy_examples/BikeChainSwapApp  # Path to the specific folder containing requirements.txt
+        repository: bavodenys/Kivy_examples
+        path: Kivy_examples
 
+    - name: Navigate to BikeChainSwapApp directory
+      run: cd Kivy_examples/BikeChainSwapApp
+    
     - name: Check if requirements.txt exists
       run: |
-        cd Kivy_examples/BikeChainSwapApp
         if [ -f "requirements.txt" ]; then
           echo "requirements.txt found."
         else
