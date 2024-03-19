@@ -13,11 +13,11 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
       with:
-        path: BikeChainSwapApp  
+        path: Kivy_examples/BikeChainSwapApp  # Path to the specific folder containing requirements.txt
 
     - name: Check if requirements.txt exists
       run: |
-        cd BikeChainSwapApp
+        cd Kivy_examples/BikeChainSwapApp
         if [ -f "requirements.txt" ]; then
           echo "requirements.txt found."
         else
@@ -26,6 +26,7 @@ jobs:
         fi
 
     - name: Install Dependencies
+      if: success()
       run: |
         sudo apt update
         sudo apt install -y \
@@ -41,6 +42,6 @@ jobs:
         pip install -r requirements.txt
 
     - name: Build AAB Package
+      if: success()
       run: |
-        buildozer init
         buildozer android release
