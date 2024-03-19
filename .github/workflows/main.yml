@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,15 +13,10 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
       with:
-        path: Kivy_examples/BikeChainSwapApp  # Path to the specific folder
-    
-    - name: Change Directory
-      run: cd Kivy_examples/BikeChainSwapApp
+        path: BikeChainSwapApp  
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+    - name: Change Directory
+      run: cd BikeChainSwapApp
 
     - name: Install Dependencies
       run: |
@@ -35,10 +30,7 @@ jobs:
           python3-venv \
           python3-dev \
           libssl-dev \
-          libffi-dev 
-
-    - name: Install Buildozer
-      run: |
+          libffi-dev
         pip install -r requirements.txt
 
     - name: Build AAB Package
