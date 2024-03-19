@@ -26,7 +26,7 @@ jobs:
           exit 1
         fi
 
-    - name: Install Dependencies
+    - name: Install System Dependencies and Android SDK
       if: success()
       run: |
         cd Kivy_examples/BikeChainSwapApp
@@ -41,7 +41,19 @@ jobs:
           python3-dev \
           libssl-dev \
           libffi-dev
+        # Accept Android SDK licenses
+        yes | sdkmanager --licenses
+        # Install Aidl
+        sudo apt-get install -y aidl
+        # Install required Android SDK components
+        sdkmanager "build-tools;35.0.0-rc1" "platforms;android-31"
+    
+    - name: Install Python Dependencies
+      if: success()
+      run: |
+        cd Kivy_examples/BikeChainSwapApp
         pip install -r requirements.txt
+
 
     - name: Build AAB Package
       if: success()
