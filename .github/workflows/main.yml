@@ -29,13 +29,12 @@ jobs:
     - name: Install Android SDK
       run: |
         wget -q "https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip" -O android-sdk-tools.zip
-        ls -l  # Output the list of files in the current directory for debugging
         unzip -q android-sdk-tools.zip -d $HOME/android-sdk
-        echo 'export PATH=$HOME/android-sdk/tools/bin:$PATH' >> $HOME/.bashrc
-        source $HOME/.bashrc
+        echo 'export ANDROID_SDK_ROOT=$HOME/android-sdk' >> $HOME/.bashrc
+        echo 'export PATH=$ANDROID_SDK_ROOT/tools/bin:$PATH' >> $HOME/.bashrc
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$ANDROID_SDK_ROOT/tools/bin:$PATH
         echo "PATH: $PATH"  # Output the PATH environment variable for debugging
-
-
 
     - name: Install System Dependencies and Android SDK
       if: success()
