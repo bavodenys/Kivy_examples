@@ -1,72 +1,30 @@
-name: Build AAB Package
-
+name: Build BikeChainSwapApp
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   build:
+    name: Build for Android
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-      with:
-        repository: bavodenys/Kivy_examples
-        path: Kivy_examples
-    
-    - name: Check if requirements.txt exists
-      run: |
-        cd Kivy_examples/BikeChainSwapApp
-        if [ -f "requirements.txt" ]; then
-          echo "requirements.txt found."
-        else
-          echo "requirements.txt not found."
-          exit 1
-        fi
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          path: Kivy_examples  # Specify the target directory for checkout
 
-    - name: Install Android SDK
-      run: |
-        wget -q "https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip" -O android-sdk-tools.zip
-        unzip -q android-sdk-tools.zip -d $HOME/android-sdk
-        echo 'export ANDROID_SDK_ROOT=$HOME/android-sdk' >> $HOME/.bashrc
-        echo 'export PATH=$ANDROID_SDK_ROOT/tools/bin:$PATH' >> $HOME/.bashrc
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$ANDROID_SDK_ROOT/tools/bin:$PATH
-        echo "PATH: $PATH"  # Output the PATH environment variable for debugging
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          workdir: Kivy_examples/BikeChainSwapApp  # Adjust the working directory to your app's directory
+          buildozer_version: stable
 
-    - name: Install System Dependencies and Android SDK
-      if: success()
-      run: |
-        cd Kivy_examples/BikeChainSwapApp
-        sudo apt update
-        sudo apt install -y \
-          python3-pip \
-          build-essential \
-          git \
-          python3 \
-          python3-setuptools \
-          python3-venv \
-          python3-dev \
-          libssl-dev \
-          libffi-dev
-        # Accept Android SDK licenses
-        yes | $HOME/android-sdk/tools/bin/sdkmanager --licenses
-        # Install Aidl
-        sudo apt-get install -y aidl
-        # Install required Android SDK components
-        $HOME/android-sdk/tools/bin/sdkmanager "build-tools;35.0.0-rc1" "platforms;android-31"
-    
-    - name: Install Python Dependencies
-      if: success()
-      run: |
-        cd Kivy_examples/BikeChainSwapApp
-        pip install -r requirements.txt
-
-
-    - name: Build AAB Package
-      if: success()
-      run: |
-        cd Kivy_examples/BikeChainSwapApp
-        buildozer android release
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
