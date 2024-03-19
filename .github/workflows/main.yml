@@ -33,6 +33,8 @@ jobs:
         unzip -q android-sdk-tools.zip -d $HOME/android-sdk
         echo 'export PATH=$HOME/android-sdk/tools/bin:$PATH' >> $HOME/.bashrc
         source $HOME/.bashrc
+        echo "PATH: $PATH"  # Output the PATH environment variable for debugging
+
 
 
     - name: Install System Dependencies and Android SDK
