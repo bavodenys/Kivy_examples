@@ -15,15 +15,10 @@ jobs:
       with:
         repository: bavodenys/Kivy_examples
         path: Kivy_examples
-
-    - name: Navigate to BikeChainSwapApp directory
-      run: cd Kivy_examples/BikeChainSwapApp
-
-    - name: Show files in BikeChainSwapApp directory
-      run: ls
     
     - name: Check if requirements.txt exists
       run: |
+        cd Kivy_examples/BikeChainSwapApp
         if [ -f "requirements.txt" ]; then
           echo "requirements.txt found."
         else
@@ -34,6 +29,7 @@ jobs:
     - name: Install Dependencies
       if: success()
       run: |
+        cd Kivy_examples/BikeChainSwapApp
         sudo apt update
         sudo apt install -y \
           python3-pip \
@@ -50,4 +46,5 @@ jobs:
     - name: Build AAB Package
       if: success()
       run: |
+        cd Kivy_examples/BikeChainSwapApp
         buildozer android release
