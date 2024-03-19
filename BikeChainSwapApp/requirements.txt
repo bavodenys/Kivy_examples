@@ -3,6 +3,7 @@ asynckivy==0.6.2
 buildozer==1.5.0
 certifi==2024.2.2
 charset-normalizer==3.3.2
+Cython==3.0.9
 distlib==0.3.8
 docutils==0.20.1
 exceptiongroup==1.2.0
