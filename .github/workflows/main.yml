@@ -39,7 +39,15 @@ jobs:
             libavcodec-dev \
             zlib1g-dev
 
-      - name: Install Buildozer
+      - name: Install Android SDK Build-Tools and Accept Licenses
+        run: |
+          echo "y" | sdkmanager "build-tools;35.0.0-rc1" --licenses
+
+      - name: Install aidl
+        run: |
+          sudo apt-get install -y aidl
+
+      - name: Install Python packages
         run: |
           cd Kivy_examples/BikeChainSwapApp
           pip install -r requirements.txt
