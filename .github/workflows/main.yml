@@ -10,7 +10,7 @@ jobs:
     name: Build Android app
     runs-on: ubuntu-latest
     container:
-      image: circleci/android:api-29t
+      image: cimg/android:2024.01.1-ndk
 
     steps:
       - name: Checkout Repository
