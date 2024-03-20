@@ -53,8 +53,8 @@ jobs:
   
       - name: Install Android SDK Build-Tools
         run: |
-          echo "y" | sdkmanager "build-tools;35.0.0-rc1" --licenses
-          sdkmanager "build-tools;35.0.0-rc1"
+          echo "y" | $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager "build-tools;35.0.0-rc1" --licenses
+          $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager "build-tools;35.0.0-rc1"
 
       - name: Install Python packages
         run: |
