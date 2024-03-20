@@ -42,19 +42,22 @@ jobs:
       - name: Install aidl
         run: |
           sudo apt-get install -y aidl
-          
+
+
+      
       - name: Install Android SDK Tools
         run: |
           wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
           unzip -qq commandlinetools-linux-7583922_latest.zip -d $HOME/android-sdk
           echo 'export ANDROID_HOME=$HOME/android-sdk' >> ~/.bashrc
-          echo 'export PATH=$PATH:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/cmdline-tools/latest/bin' >> ~/.bashrc
+          echo 'export PATH=$PATH:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/cmdline-tools/latest/bin' >> ~/.bashrc
           source ~/.bashrc
   
       - name: Install Android SDK Build-Tools
         run: |
-          echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "build-tools;35.0.0-rc1" --licenses
-          sdkmanager --sdk_root=$ANDROID_HOME "build-tools;35.0.0-rc1"
+          echo "y" | $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_HOME "build-tools;35.0.0-rc1" --licenses
+          $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_HOME "build-tools;35.0.0-rc1"
+
 
       - name: Install Python packages
         run: |
