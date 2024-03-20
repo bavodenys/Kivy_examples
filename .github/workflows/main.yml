@@ -45,15 +45,12 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install Python packages
+      - name: Build AAB App
         run: |
           cd Kivy_examples/BikeChainSwapApp
           pip install -r requirements.txt
-
-      - name: Build AAB
-        run: |
-          cd Kivy_examples/BikeChainSwapApp
           buildozer android release
+
 
      
           cd Kivy_examples/BikeChainSwapApp
