@@ -18,11 +18,6 @@ jobs:
         with:
           path: Kivy_examples  # Specify the target directory for checkout
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-
       - name: Install Build Dependencies
         run: |
           sudo apt-get update
@@ -45,12 +40,21 @@ jobs:
         run: |
           sudo apt-get install -y aidl
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
       - name: Install Python packages
         run: |
           cd Kivy_examples/BikeChainSwapApp
           pip install -r requirements.txt
-  
+
       - name: Build AAB
         run: |
+          cd Kivy_examples/BikeChainSwapApp
+          buildozer android release
+
+     
           cd Kivy_examples/BikeChainSwapApp
           buildozer android release
